@@ -3,4 +3,4 @@ class Locations():
     Used by the offset and log methods.
     Fill accordingly.
     """
-	runningFolder = "/home/pi/telegram-bot/"
+    runningFolder = "/home/pi/telegram-bot/"
