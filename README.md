@@ -30,9 +30,9 @@ ExecStart=/usr/bin/python3 /home/pi/telegram-bot/driver.py
 [Install]
 WantedBy=multi-user.target
 ```
-Don't forget to change the folder and file locations accordingly! The permissions should be 644.
+Don't forget to change the line starting with `ExecStart` accordingly! The permissions of this file should be 644.
 
-2. Enter the following commands;
+2. On a terminal window, enter the following commands;
 ```
 sudo systemctl daemon-reload
 sudo systemctl enable telegram.service
