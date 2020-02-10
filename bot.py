@@ -1,0 +1,179 @@
+from secrets import Secrets
+from botfile import BotFile
+from responses import Responses
+from log import Log
+
+import requests
+import json
+
+class Bot(Secrets):
+    """Class for handling all communication with the Telegram API. 
+
+    Attributes:
+        _url -- the url for Telegram Bot API
+        _debug -- if on, logging will be active
+    """
+
+    # https://api.telegram.org/bot<token>/METHOD_NAME
+    _url = "https://api.telegram.org/bot"
+    _debug = True
+
+    def __init__(self):
+        self._url += self._token
+        self._r = Responses()
+        self._l = Log()
+
+    def hello(self):
+        """Tester method to check if the bot class works properly.
+        """
+        print("Hello, I am running nicely.")
+
+    def getUpdates(self):
+        """Gets updates from the Telegram Server. Uses Long Polling.
+        Returns boolean.
+        """
+        url = self._url + "/getUpdates"
+        b = BotFile()
+        if b.fileExists() and b.readFile():
+            offset = b.readFile()[0]
+        else :
+            offset = 0
+        params = {'offset': int(offset) + 1, 
+                  'limit': 100, 
+                  'timeout': 0, 
+                  'allowed_updates': ['message']}
+        r = requests.post(url, params)
+        page = r.content
+        items = json.loads(page)
+        if items['ok'] is True:
+            res = items['result']
+            for i in res:
+                if 'message' in i:
+                    chat = i['message']['chat']
+                    chatID = chat['id']
+                    chatType = chat['type']
+                    if chatType == 'private':
+                        #person
+                        try:
+                            chatFirstName = chat['first_name']
+                        except:
+                            chatFirstName = None
+                        try:
+                            chatLastName = chat['last_name']
+                        except:
+                            chatLastName = None
+                        try:
+                            chatUserName = chat['username']
+                        except:
+                            chatUserName = None
+                    else :
+                        #group
+                        chatTitle = chat['title']
+                    chatDate = i['message']['date']
+                    messageID = i['message']['message_id']
+                    messageFrom = i['message']['from']
+                    try:
+                        messageFromFirstName = messageFrom['first_name']
+                    except:
+                        messageFromFirstName = None
+                    try:
+                        messageFromLastName = messageFrom['last_name']
+                    except:
+                        messageFromLastName = None
+                    try:
+                        messageFromUserName = messageFrom['username']
+                    except:
+                        messageFromUserName = None
+                    messageFromID = messageFrom['id']
+                    messageFromIsBot = messageFrom['is_bot']
+                    try:
+                        messageFromLanguageCode = messageFrom['language_code']
+                    except:
+                        messageFromLanguageCode = "TR"
+                    content = ""
+                    if 'text' in i['message']:
+                        content += "Text: " + i['message']['text'] + " "
+                    if 'photo' in i['message']:
+                        content += "Caption: " + i['message']['caption'] + " "
+                        content += "Photo: " + i['message']['photo'][-1]['file_id']
+                    if 'document' in i['message']:
+                        content += "Caption: " + i['message']['caption'] + " "
+                        content += "File: " + i['message']['document']['file_id']
+                    logText = "Message from: %s %s (%s) - %s - %s - ID: %s" % (messageFromFirstName, messageFromLastName, messageFromUserName, chatDate, content, messageID)
+                    if chatType != 'private' :
+                        logText += " - Group: " + chatTitle
+                    print(logText)
+                    if self._debug is True:
+                        self._l.log(logText)
+                    responses = self._r.respond(content)
+                    if responses is not []:
+                        for m in responses:
+                            self.sendMessage(chatID, m, messageID)
+                elif 'inline_query' in i:
+                    inline = i['inline_query']
+                    messageFrom = inline['from']
+                    messageFromFirstName = messageFrom['first_name']
+                    messageFromLastName = messageFrom['last_name']
+                    try:
+                        messageFromUserName = messageFrom['username']
+                    except:
+                        messageFromUserName = None
+                    messageFromID = messageFrom['id']
+                    messageFromIsBot = messageFrom['is_bot']
+                    try:
+                        messageFromLanguageCode = messageFrom['language_code']
+                    except:
+                        messageFromLanguageCode = "TR"
+                    inlineID = inline['id']
+                    inlineQuery = inline['query']
+
+
+                    # TODO 
+                    print("Inline")
+
+            if len(res) > 0:
+                newOffset = res[-1]['update_id']
+                b.writeFile([newOffset])
+                return True
+            else :
+                return True
+                #print("Nothing new")
+        else :
+            return False
+
+    def sendInlineResponse(self, inline_query_id, results):
+        # TODO
+        url = self._url + "/answerInlineQuery"
+        params = {'inline_query_id': inline_query_id,
+                  'results': []}
+        r = requests.post(url, params)
+        page = r.content
+        items = json.loads(page)
+        if items['ok'] == True:
+            return True
+        else :
+            return False
+
+
+    def sendMessage(self, chat_id, message, reply = 0):
+        """Send messages as the bot.
+        chat_id -- The chat ID to send the message to
+        message -- The message body
+        reply   -- If a reply 1, otherwise by default 0
+        Returns boolean.
+        """
+        url = self._url + "/sendMessage"
+        params = {'chat_id': chat_id,
+                  'text': message, 
+                  'parse_mode': 'Markdown'}
+        if reply != 0:
+            params['reply_to_message_id'] = reply
+        r = requests.post(url, params)
+        page = r.content
+        items = json.loads(page)
+        if items['ok'] == True:
+            return True
+        else :
+            return False
+
+
