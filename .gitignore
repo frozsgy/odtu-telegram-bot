@@ -131,3 +131,6 @@ dmypy.json
 # Bot Files
 offsets.ini
 secrets.py
+
+# sqlite databases
+*.db

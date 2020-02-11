@@ -1,12 +1,10 @@
-from secrets import Secrets
-from botfile import BotFile
 from responses import Responses
-from log import Log
+from db import DB
 
 import requests
 import json
 
-class Bot(Secrets):
+class Bot():
     """Class for handling all communication with the Telegram API. 
 
     Attributes:
@@ -17,11 +15,15 @@ class Bot(Secrets):
     # https://api.telegram.org/bot<token>/METHOD_NAME
     _url = "https://api.telegram.org/bot"
     _debug = True
+    _token = ""
 
     def __init__(self):
+        self._db = DB()
+        self._token = self._db.getToken()
         self._url += self._token
         self._r = Responses()
-        self._l = Log()
+        
+        
 
     def hello(self):
         """Tester method to check if the bot class works properly.
@@ -33,11 +35,7 @@ class Bot(Secrets):
         Returns boolean.
         """
         url = self._url + "/getUpdates"
-        b = BotFile()
-        if b.fileExists() and b.readFile():
-            offset = b.readFile()[0]
-        else :
-            offset = 0
+        offset = self._db.getOffset()
         params = {'offset': int(offset) + 1, 
                   'limit': 100, 
                   'timeout': 0, 
@@ -104,7 +102,10 @@ class Bot(Secrets):
                         logText += " - Group: " + chatTitle
                     print(logText)
                     if self._debug is True:
-                        self._l.log(logText)
+                        if chatType == 'private': 
+                            self._db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, 0)
+                        else :
+                            self._db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, chatID, chatTitle)
                     responses = self._r.respond(content)
                     if responses is not []:
                         for m in responses:
@@ -133,7 +134,7 @@ class Bot(Secrets):
 
             if len(res) > 0:
                 newOffset = res[-1]['update_id']
-                b.writeFile([newOffset])
+                self._db.updateOffset(newOffset)
                 return True
             else :
                 return True

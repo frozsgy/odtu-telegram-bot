@@ -4,10 +4,9 @@ This repository contains a tiny Telegram Bot that was developed to understand th
 
 ## Installation
 
-1. Get yourself a Bot account and a token at [Telegram Bots](https://core.telegram.org/bots)
-2. Enter your token to `secrets-template.py` and rename it as `secrets.py`
-3. Set up your environment and install dependencies
-4. Enter your full location of your bot to `locations.py`. You may use `pwd` to find your working directory.
+1. Get yourself a Bot account and a token at [Telegram Bots](https://core.telegram.org/bots).
+2. Set up your environment and install dependencies
+3. Run `install.py` and enter your Telegram Bot Token.
 
 ## Usage
 
