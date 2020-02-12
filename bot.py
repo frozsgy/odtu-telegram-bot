@@ -3,6 +3,7 @@ from db import DB
 
 import requests
 import json
+import datetime
 
 class Bot():
     """Class for handling all communication with the Telegram API. 
@@ -129,7 +130,14 @@ class Bot():
 
         if responses is not []:
             for m in responses:
-                self.sendMessage(chatID, m, messageID)
+                if m == "PLACEHOLDERTEXTOTBEREPLACEDBYTHEBOTCLASS":
+                    if self._db.checkService(messageFromID, 1) is True:
+                        self.sendMessage(chatID, 'Yemekhane servisine zaten abonesiniz.', messageID)
+                    else :
+                        self._db.addService(messageFromID, 1)
+                        self.sendMessage(chatID, 'Yemekhane servisine abone oldunuz.', messageID)
+                else :
+                    self.sendMessage(chatID, m, messageID)
 
 
     def parseInline(self, body):
@@ -190,5 +198,20 @@ class Bot():
             return True
         else :
             return False
+
+    def sendServiceMessages(self):
+        """Send service messages as the bot.
+        """
+        now = datetime.datetime.now()
+        clock = (now.hour, now.minute)
+        weekdayMorning = {1: self._r.food}
+        if now.weekday() < 5 and clock == (8, 30):
+            for j in weekdayMorning.keys():
+                if self._db.checkSentServiceToday(j) is False:
+                    users = self._db.getServiceUsers(j)
+                    # print(users)
+                    for i in users:
+                        self.sendMessage(i, weekdayMorning[j]())
+                    self._db.sentServiceToday(j)
 
 

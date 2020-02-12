@@ -46,8 +46,11 @@ class Responses():
         if re.search('/help', TurkishText(message).lower()):
             res.append("Help will arrive for the ones who really need.")
 
-        return res
+        # Daily cafeteria menu function
+        if re.search('/menu', TurkishText(message).lower()):
+            res.append("PLACEHOLDERTEXTOTBEREPLACEDBYTHEBOTCLASS")
 
+        return res
 
     def canned(self, message):
         """Checks the message for possible canned responses.

@@ -1,5 +1,6 @@
 import sqlite3
 import os
+import datetime
 
 class DB():
     """Class for handling database methods. 
@@ -28,9 +29,13 @@ class DB():
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS people (uid varchar NOT NULL UNIQUE , fname text, lname text, uname text) ''')
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL UNIQUE, time date, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid)) ''')
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS groups (gid varchar NOT NULL UNIQUE, title text) ''')
+            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY, name varchar) ''')
+            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS subscriptions (uid varchar NOT NULL, service INTEGER, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(service) REFERENCES services(id)) ''')
+            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS servicedays (id INTEGER, day date, FOREIGN KEY(id) REFERENCES services(id)) ''')
             self.__cursor.execute(''' INSERT into groups VALUES(0, 'private') ''')
             self.__cursor.execute(''' INSERT into settings VALUES(NULL, 0) ''')
             self.__cursor.execute(''' INSERT into settings VALUES(NULL, ?) ''', (secret,))
+            self.__cursor.execute(''' INSERT into services VALUES(1, 'yemekhane') ''')
         except:
             print('Cannot create DB')
         finally:
@@ -154,6 +159,78 @@ class DB():
             self.__conn.commit()
             return res
 
+    def getServiceTitle(self, sid):
+        """Fetches the service title with the given service id from the database.
+        """
+        try:
+            self.__cursor.execute(''' SELECT name from services WHERE id = ? ''', (sid,))
+            return self.__cursor.fetchone()[0]
+        except :
+            return False
+
+    def checkService(self, uid, service):
+        """Checks if a user with the given user id subscribed to the service.
+        Returns boolean.
+        """
+        self.__cursor.execute(''' SELECT COUNT(*) from subscriptions WHERE uid = ? and service = ?''', (uid,service))
+        status = self.__cursor.fetchone()[0]
+        if status == 1:
+            return True
+        else :
+            return False
+
+    def addService(self, uid, service):
+        """Adds a service subscription to the database.
+        Returns boolean.
+        """
+        res = True
+        if self.checkService(uid, service) is True:
+            if self.__verbose:
+                print("User %s already subscribed to service %s" % (uid, self.getServiceTitle(service)))
+            return res
+        try:
+            self.__cursor.execute(''' INSERT into subscriptions VALUES(?,?) ''', (uid, service))
+            if self.__verbose:
+                print("User %s subscribed to %s service succesfully" % (uid, self.getServiceTitle(service)))
+        except:
+            res = False
+            if self.__verbose:
+                print("User %s cannot subscribe to %s service" % (uid, self.getServiceTitle(service)))
+        finally:
+            self.__conn.commit()
+            return res
+
+    def checkSentServiceToday(self, service):
+        """Checks if the service blast has been sent today.
+        Returns boolean.
+        """
+        now = datetime.datetime.now()
+        today = str(now.year) + str(now.month) + str(now.day)
+        self.__cursor.execute(''' SELECT COUNT(*) from servicedays WHERE id = ? and day = ? ''', (service, today))
+        status = self.__cursor.fetchone()[0]
+        if status == 1:
+            return True
+        else :
+            return False
+
+    def sentServiceToday(self, service):
+        """Updates as a service blast has been sent today.
+        Returns boolean.
+        """
+        now = datetime.datetime.now()
+        today = str(now.year) + str(now.month) + str(now.day)
+        res = True
+        try:
+            self.__cursor.execute(''' INSERT into servicedays VALUES(?,?) ''', (service, today))
+            if self.__verbose:
+                print("Service days for %s updated as sent" % self.getServiceTitle(service))
+        except:
+            res = False
+            print("Service days could not be updated")
+        finally:
+            self.__conn.commit()
+            return res
+
     def getGroupTitle(self, gid):
         """Fetches the group title with the given group id from the database.
         """
@@ -171,6 +248,12 @@ class DB():
             return self.__cursor.fetchone()
         else :
             return False
+
+    def getServiceUsers(self, service):
+        """Fetches the user ids subscribed to the given service from the database.
+        """
+        self.__cursor.execute(''' SELECT * from subscriptions WHERE service = ? ''', (service,))
+        return self.__cursor.fetchall()
 
     def listLogs(self):
         """Prints all logs from the database.

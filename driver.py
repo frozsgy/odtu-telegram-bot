@@ -15,6 +15,7 @@ def runBot():
     while True:
         try:
             b.getUpdates()
+            b.sendServiceMessages()
             time.sleep(1.0 - ((time.time() - starttime) % 1.0))
         except requests.exceptions.ConnectionError as e:
             if debug is True:
