@@ -45,100 +45,114 @@ class Bot():
             res = items['result']
             for i in res:
                 if 'message' in i:
-                    chat = i['message']['chat']
-                    chatID = chat['id']
-                    chatType = chat['type']
-                    if chatType == 'private':
-                        #person
-                        try:
-                            chatFirstName = chat['first_name']
-                        except:
-                            chatFirstName = None
-                        try:
-                            chatLastName = chat['last_name']
-                        except:
-                            chatLastName = None
-                        try:
-                            chatUserName = chat['username']
-                        except:
-                            chatUserName = None
-                    else :
-                        #group
-                        chatTitle = chat['title']
-                    chatDate = i['message']['date']
-                    messageID = i['message']['message_id']
-                    messageFrom = i['message']['from']
-                    try:
-                        messageFromFirstName = messageFrom['first_name']
-                    except:
-                        messageFromFirstName = None
-                    try:
-                        messageFromLastName = messageFrom['last_name']
-                    except:
-                        messageFromLastName = None
-                    try:
-                        messageFromUserName = messageFrom['username']
-                    except:
-                        messageFromUserName = None
-                    messageFromID = messageFrom['id']
-                    messageFromIsBot = messageFrom['is_bot']
-                    try:
-                        messageFromLanguageCode = messageFrom['language_code']
-                    except:
-                        messageFromLanguageCode = "TR"
-                    content = ""
-                    if 'text' in i['message']:
-                        content += "Text: " + i['message']['text'] + " "
-                    if 'photo' in i['message']:
-                        content += "Caption: " + i['message']['caption'] + " "
-                        content += "Photo: " + i['message']['photo'][-1]['file_id']
-                    if 'document' in i['message']:
-                        content += "Caption: " + i['message']['caption'] + " "
-                        content += "File: " + i['message']['document']['file_id']
-                    logText = "Message from: %s %s (%s) - %s - %s - ID: %s" % (messageFromFirstName, messageFromLastName, messageFromUserName, chatDate, content, messageID)
-                    if chatType != 'private' :
-                        logText += " - Group: " + chatTitle
-                    print(logText)
-                    if self._debug is True:
-                        if chatType == 'private': 
-                            self._db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, 0)
-                        else :
-                            self._db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, chatID, chatTitle)
-                    responses = self._r.respond(content)
-                    if responses is not []:
-                        for m in responses:
-                            self.sendMessage(chatID, m, messageID)
+                    self.parseMessage(i)                    
                 elif 'inline_query' in i:
-                    inline = i['inline_query']
-                    messageFrom = inline['from']
-                    messageFromFirstName = messageFrom['first_name']
-                    messageFromLastName = messageFrom['last_name']
-                    try:
-                        messageFromUserName = messageFrom['username']
-                    except:
-                        messageFromUserName = None
-                    messageFromID = messageFrom['id']
-                    messageFromIsBot = messageFrom['is_bot']
-                    try:
-                        messageFromLanguageCode = messageFrom['language_code']
-                    except:
-                        messageFromLanguageCode = "TR"
-                    inlineID = inline['id']
-                    inlineQuery = inline['query']
-
-
-                    # TODO 
-                    print("Inline")
-
+                    self.parseInline(i)
+                else :
+                    # TODO
+                    pass
             if len(res) > 0:
                 newOffset = res[-1]['update_id']
                 self._db.updateOffset(newOffset)
-                return True
-            else :
-                return True
-                #print("Nothing new")
+            return True
         else :
             return False
+
+    def parseMessage(self, body):
+        """Parses messages.
+        """
+        chat = body['message']['chat']
+        chatID = chat['id']
+        chatType = chat['type']
+        if chatType == 'private':
+            #person
+            try:
+                chatFirstName = chat['first_name']
+            except:
+                chatFirstName = None
+            try:
+                chatLastName = chat['last_name']
+            except:
+                chatLastName = None
+            try:
+                chatUserName = chat['username']
+            except:
+                chatUserName = None
+        else :
+            #group
+            chatTitle = chat['title']
+        chatDate = body['message']['date']
+        messageID = body['message']['message_id']
+        messageFrom = body['message']['from']
+        try:
+            messageFromFirstName = messageFrom['first_name']
+        except:
+            messageFromFirstName = None
+        try:
+            messageFromLastName = messageFrom['last_name']
+        except:
+            messageFromLastName = None
+        try:
+            messageFromUserName = messageFrom['username']
+        except:
+            messageFromUserName = None
+        messageFromID = messageFrom['id']
+        messageFromIsBot = messageFrom['is_bot']
+        try:
+            messageFromLanguageCode = messageFrom['language_code']
+        except:
+            messageFromLanguageCode = "TR"
+        content = ""
+        if 'text' in body['message']:
+            content += "Text: " + body['message']['text'] + " "
+        if 'photo' in body['message']:
+            content += "Caption: " + body['message']['caption'] + " "
+            content += "Photo: " + body['message']['photo'][-1]['file_id']
+        if 'document' in body['message']:
+            content += "Caption: " + body['message']['caption'] + " "
+            content += "File: " + body['message']['document']['file_id'] 
+        responses = self._r.respond(content)
+
+        if self._debug is True:
+            logText = "Message from: %s %s (%s) - %s - %s - ID: %s" % (messageFromFirstName, messageFromLastName, messageFromUserName, chatDate, content, messageID)
+            if chatType != 'private' :
+                logText += " - Group: " + chatTitle
+            print(logText)
+            if chatType == 'private': 
+                self._db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, 0)
+            else :
+                self._db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, chatID, chatTitle)
+            # TODO
+            # Log responses from the bot
+
+        if responses is not []:
+            for m in responses:
+                self.sendMessage(chatID, m, messageID)
+
+
+    def parseInline(self, body):
+        """Parses inline messages for inline bot functions.
+        """
+        inline = body['inline_query']
+        messageFrom = inline['from']
+        messageFromFirstName = messageFrom['first_name']
+        messageFromLastName = messageFrom['last_name']
+        try:
+            messageFromUserName = messageFrom['username']
+        except:
+            messageFromUserName = None
+        messageFromID = messageFrom['id']
+        messageFromIsBot = messageFrom['is_bot']
+        try:
+            messageFromLanguageCode = messageFrom['language_code']
+        except:
+            messageFromLanguageCode = "TR"
+        inlineID = inline['id']
+        inlineQuery = inline['query']
+
+
+        # TODO 
+        print("Inline")
 
     def sendInlineResponse(self, inline_query_id, results):
         # TODO
