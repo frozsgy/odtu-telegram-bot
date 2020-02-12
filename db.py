@@ -5,8 +5,8 @@ class DB():
     """Class for handling database methods. 
 
     Attributes:
-        verbose -- turns the verbose mode on, useful for debugging
-        location -- the absolute location for the bot
+        __verbose -- turns the verbose mode on, useful for debugging
+        __location -- the absolute location for the bot
     """
 
     __verbose = False
@@ -21,6 +21,8 @@ class DB():
         self.__conn.close()
 
     def createDB(self, secret):
+        """Creates the database and tables. This method should be called only during the installation.
+        """
         try :
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, data varchar) ''')
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS people (uid varchar NOT NULL UNIQUE , fname text, lname text, uname text) ''')
@@ -35,6 +37,8 @@ class DB():
             self.__conn.commit()
 
     def getToken(self):
+        """Fetches the Telegram Bot API Token from the database.
+        """
         try:
             self.__cursor.execute(''' SELECT data from settings WHERE id = 2 ''')
             return self.__cursor.fetchone()[0]
@@ -44,10 +48,14 @@ class DB():
             return False
 
     def getOffset(self):
+        """Fetches the message offset from the database.
+        """
         self.__cursor.execute(''' SELECT data from settings WHERE id = 1 ''')
         return self.__cursor.fetchone()[0]
 
     def updateOffset(self, offset):
+        """Updates the message offset according to the offset parameter.
+        """
         res = True
         try:
             self.__cursor.execute(''' UPDATE settings SET data = ? WHERE id = 1 ''', (offset,))
@@ -61,6 +69,9 @@ class DB():
             return res
 
     def checkUserExists(self, uid):
+        """Checks if a user with the given user id exists.
+        Returns boolean.
+        """
         self.__cursor.execute(''' SELECT COUNT(*) from people WHERE uid = ? ''', (uid,))
         status = self.__cursor.fetchone()[0]
         if status == 1:
@@ -69,6 +80,9 @@ class DB():
             return False
 
     def addUser(self, uid, fname, lname, uname):
+        """Adds a user with the given id, first name, last name, and username to the database.
+        Returns boolean.
+        """
         res = True
         if self.checkUserExists(uid):
             if self.__verbose:
@@ -88,6 +102,9 @@ class DB():
                 return res
 
     def checkGroupExists(self, gid):
+        """Checks if a group with the given group id exists.
+        Returns boolean.
+        """
         self.__cursor.execute(''' SELECT COUNT(*) from groups WHERE gid = ? ''', (gid,))
         status = self.__cursor.fetchone()[0]
         if status == 1:
@@ -96,6 +113,9 @@ class DB():
             return False
 
     def addGroup(self, gid, title):
+        """Adds a group with the given id, and title to the database.
+        Returns boolean.
+        """
         res = True
         if self.checkGroupExists(gid):
             if self.__verbose:
@@ -115,6 +135,9 @@ class DB():
                 return res
 
     def log(self, uid, fname, lname, uname, mid, time, content, gid, gtitle = 'private'):
+        """Logs the activity to the database.
+        Returns boolean.
+        """
         self.addUser(uid, fname, lname, uname)
         if gid != 0:
             self.addGroup(gid, gtitle)
@@ -132,6 +155,8 @@ class DB():
             return res
 
     def getGroupTitle(self, gid):
+        """Fetches the group title with the given group id from the database.
+        """
         if self.checkGroupExists(gid):
             self.__cursor.execute(''' SELECT title from groups WHERE gid = ? ''', (gid,))
             return self.__cursor.fetchone()[0]
@@ -139,6 +164,8 @@ class DB():
             return False
 
     def getUser(self, uid):
+        """Fetches the user details with the given user id from the database.
+        """
         if self.checkUserExists(uid):
             self.__cursor.execute(''' SELECT * from people WHERE uid = ? ''', (uid,))
             return self.__cursor.fetchone()
@@ -146,12 +173,16 @@ class DB():
             return False
 
     def listLogs(self):
+        """Prints all logs from the database.
+        """
         self.__cursor.execute(''' SELECT * FROM logs ORDER by mid ''')
         print("Printing all logs")
         for i  in self.__cursor.fetchall():
             print(i)
 
     def listLogsFromUser(self, uid):
+        """Prints all logs with the given user id from the database.
+        """
         if self.checkUserExists(uid):
             user = self.getUser(uid)
             self.__cursor.execute(''' SELECT * FROM logs WHERE uid = ? ORDER by mid ''', (uid,))
@@ -162,12 +193,16 @@ class DB():
             print("No user exists with User ID %s" % uid)
 
     def listLogsWithUser(self):
+        """Prints all logs and the user details as a joined table from the database.
+        """
         self.__cursor.execute(''' SELECT * FROM logs INNER JOIN people ON logs.uid = people.uid ORDER by mid ''')
         print("Printing all logs with user data")
         for i  in self.__cursor.fetchall():
             print(i)
 
     def listLogsFromGroup(self, gid):
+        """Prints all logs with the given group id from the database.
+        """
         if self.checkGroupExists(gid):
             gtitle = self.getGroupTitle(gid)
             self.__cursor.execute(''' SELECT * FROM logs WHERE gid = ? ORDER by mid ''', (gid,))
@@ -178,18 +213,24 @@ class DB():
             print("No group exists with Group ID %s" % gid)
 
     def listDB(self):
+        """Prints all table names from the database.
+        """
         self.__cursor.execute(''' SELECT name FROM sqlite_master WHERE type='table' ''')
         print("Printing all databases")
         for i  in self.__cursor.fetchall():
             print(i)
 
     def listUsers(self):
+        """Prints all users from the database.
+        """
         self.__cursor.execute(''' SELECT * FROM people ORDER by uid ''')
         print("Printing all users")
         for i  in self.__cursor.fetchall():
             print(i)
 
     def listGroups(self):
+        """Prints all groups from the database.
+        """
         self.__cursor.execute(''' SELECT * FROM groups ORDER by gid ''')
         print("Printing all groups")
         for i  in self.__cursor.fetchall():
