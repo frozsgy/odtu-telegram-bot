@@ -12,6 +12,7 @@ This repository contains a tiny Telegram Bot that was developed to understand th
 
 1. After installation, run `driver.py`
 2. The bot should run smoothly.
+3. If you want to make the bot verbose (and activate the debug mode), you should use the `--debug` flag.
 
 ## Running as a Service
 The following guide explains how to run the bot as a service on Raspberry Pi (Raspbian), but it is applicable to any other Linux system as well.
