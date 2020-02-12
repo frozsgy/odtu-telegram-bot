@@ -14,14 +14,15 @@ class Bot():
 
     # https://api.telegram.org/bot<token>/METHOD_NAME
     _url = "https://api.telegram.org/bot"
-    _debug = True
+    _debug = False
     _token = ""
 
-    def __init__(self):
+    def __init__(self, debug = False):
         self._db = DB()
         self._token = self._db.getToken()
         self._url += self._token
         self._r = Responses()
+        self._debug = debug
 
     def hello(self):
         """Tester method to check if the bot class works properly.
@@ -110,7 +111,8 @@ class Bot():
             content += "Photo: " + body['message']['photo'][-1]['file_id']
         if 'document' in body['message']:
             content += "Caption: " + body['message']['caption'] + " "
-            content += "File: " + body['message']['document']['file_id'] 
+            content += "File: " + body['message']['document']['file_id']
+
         responses = self._r.respond(content)
 
         if self._debug is True:
