@@ -22,8 +22,6 @@ class Bot():
         self._token = self._db.getToken()
         self._url += self._token
         self._r = Responses()
-        
-        
 
     def hello(self):
         """Tester method to check if the bot class works properly.
