@@ -5,7 +5,7 @@ This repository contains a tiny Telegram Bot that was developed to understand th
 ## Installation
 
 1. Get yourself a Bot account and a token at [Telegram Bots](https://core.telegram.org/bots).
-2. Set up your environment and install dependencies
+2. Set up your environment and install dependencies.
 3. Run `install.py` and enter your Telegram Bot Token.
 
 ## Usage
