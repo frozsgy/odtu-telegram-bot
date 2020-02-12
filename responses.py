@@ -23,7 +23,7 @@ class Responses():
         #self.__methods = [self.sayHello]
         self.__canned['hello'] = "Hello from the other side"
         self.__canned['günaydın'] = "Günaydın hocam!"
-        #self.__canned['sa'] = 'as'
+        self.__canned['/start'] = "Merhaba! Ben ODTÜ Bot. Şimdilik pek fazla özelliğim yok ancak zamanla gelişeceğim. Umarım beni seversin :) "
 
     def respond(self, message):
         """Processes the message and adds the response (if exists) to the response list.
