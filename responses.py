@@ -57,10 +57,10 @@ class Responses():
         Returns list of responses.
         """
         res = []
-        for i in range(len(self.__canned.keys())):
-            match = re.search(list(self.__canned.keys())[i], TurkishText(message).lower())
+        for key, val in self.__canned.items():
+            match = re.search(key, TurkishText(message).lower())
             if match:
-                res.append(list(self.__canned.values())[i])
+                res.append(val)
         return res
 
     def food(self, date = 'today'):
