@@ -3,22 +3,27 @@ from bot import *
 import time
 import sys
 
-if len(sys.argv) > 1 and sys.argv[1] in ("-V", "--verbose", "-D", "--debug"):
-    debug = True
-else :
-    debug = False
+verbose = False
+logging = False
 
-b = Bot(debug)
+for i in sys.argv:
+    if i in ('--verbose', '-V'):
+        verbose = True
+    if i in ('--log', '-L'):
+        logging = True
+
+b = Bot(verbose, logging)
+
  
-def runBot():
+def run_bot(verbose = False, logging = False):
     starttime = time.time()
     while True:
         try:
-            b.getUpdates()
-            b.sendServiceMessages()
+            b.get_updates()
+            b.send_service_messages()
             time.sleep(1.0 - ((time.time() - starttime) % 1.0))
         except requests.exceptions.ConnectionError as e:
-            if debug is True:
+            if verbose is True:
                 print("Connection error: ", e)
             print("Waiting for internet connection...")
             time.sleep(5.0)
@@ -28,6 +33,8 @@ def runBot():
     
 if __name__ == "__main__":
     b.hello()
-    if debug == True:
-        print("Debugging mode active! You will see plenty of stdout, and messages will be logged to the database.")
-    runBot()
+    if verbose is True:
+        print("Verbose mode is active! You will see plenty of stdout.")
+    if logging is True:
+        print("Logging is active! Messages will be logged to the database.")
+    run_bot()
