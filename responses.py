@@ -15,25 +15,31 @@ class Responses():
 
     __methods = []
     __canned = dict()
+    __commands = dict()
 
     def __init__(self):
-        """Adds the canned responses to the canned responses dictionary.
+        """Adds the canned responses and command responses to the 
+        respective dictionaries.
         """
 
-        #self.__methods = [self.sayHello]
+        # Canned responses
         self.__canned['hello'] = "Hello from the other side"
         self.__canned['günaydın'] = "Günaydın hocam!"
-        self.__canned['/start'] = "Merhaba! Ben ODTÜ Bot. Şimdilik pek fazla özelliğim yok ancak zamanla gelişeceğim. Umarım beni seversin :) "
+
+        # Command responses
+        self.__commands['/start'] = "Merhaba! Ben ODTÜ Bot. \n\nGüncel yemekhane menüsünü öğrenmek için `/yemekhane` yazabilirsin. `/yemekhane yarın` komutu ile yarının menüsünü de öğrenebilirsin.\n\n`/menu` komutu ile yemekhane servisine abone olabilirsin. Bu servis ile haftaiçi her gün, sabah 9'da güncel yemek menüsünü özel mesaj olarak gönderiyorum.\n\nGözüne çarpan hataları ya da botta olmasını istediğin özellikleri @frozsgy'e iletebilirsin.\n\nUmarım beni seversin :)"
+        self.__commands['/help'] = "Help will arrive for the ones who really need."
 
     def respond(self, message):
         """Processes the message and adds the response (if exists) to the response list.
         Returns list of responses.
         """
 
-        #for i in self.__methods: i(message)
-
         # Canned responses
         res = self.canned(message)
+
+        # Command responses
+        res += self.commands(message)
 
         # Cafeteria function
         if re.search('/yemekhane', TurkishText(message).lower()):
@@ -42,13 +48,9 @@ class Responses():
             else :
                 res.append(self.food())
 
-        # Help function
-        if re.search('/help', TurkishText(message).lower()):
-            res.append("Help will arrive for the ones who really need.")
-
         # Daily cafeteria menu function
         if re.search('/menu', TurkishText(message).lower()):
-            res.append("PLACEHOLDERTEXTOTBEREPLACEDBYTHEBOTCLASS")
+            res.append(('service', 1))
 
         return res
 
@@ -57,9 +59,21 @@ class Responses():
         Returns list of responses.
         """
         res = []
+        message = TurkishText(message.strip()).lower()
         for key, val in self.__canned.items():
-            match = re.search(key, TurkishText(message).lower())
-            if match:
+            if re.search(key, message):
+                res.append(val)
+        return res
+
+    def commands(self, message):
+        """Checks the message for possible responses to commands.
+        Requires an exact match of the phrase.
+        Returns list of responses.
+        """
+        res = []
+        message = TurkishText(message.strip()).lower()
+        for key, val in self.__commands.items():
+            if re.search(r'^' + key + '$', message):
                 res.append(val)
         return res
 

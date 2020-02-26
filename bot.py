@@ -99,8 +99,8 @@ class Bot():
             if 'caption' in body['message']:
                 content += "Caption: " + body['message']['caption'] + " "
         
-
-        responses = self.__r.respond(content)
+        if 'text' in body['message']:
+            responses = self.__r.respond(body['message']['text'])
 
         logText = "Message from: %s %s (%s) - %s - %s - ID: %s" % (messageFromFirstName, messageFromLastName, messageFromUserName, chatDate, content, messageID)
         if chatType != 'private' :
@@ -118,7 +118,7 @@ class Bot():
 
         if responses is not []:
             for m in responses:
-                if m == "PLACEHOLDERTEXTOTBEREPLACEDBYTHEBOTCLASS":
+                if m == ('service', 1):
                     if self.__db.check_service(messageFromID, 1) is True:
                         self.send_message(chatID, 'Yemekhane servisine zaten abonesiniz.', messageID)
                     else :
