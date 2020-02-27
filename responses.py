@@ -27,13 +27,15 @@ class Responses():
         self.__canned['günaydın'] = "Günaydın hocam!"
 
         # Command responses
-        self.__commands['/start'] = "Merhaba! Ben ODTÜ Bot. \n\nGüncel yemekhane menüsünü öğrenmek için `/yemekhane` yazabilirsin. `/yemekhane yarın` komutu ile yarının menüsünü de öğrenebilirsin.\n\n`/menu` komutu ile yemekhane servisine abone olabilirsin. Bu servis ile haftaiçi her gün, sabah 9'da güncel yemek menüsünü özel mesaj olarak gönderiyorum.\n\nGözüne çarpan hataları ya da botta olmasını istediğin özellikleri @frozsgy'e iletebilirsin.\n\nUmarım beni seversin :)"
+        self.__commands['/start'] = "Merhaba! Ben ODTÜ Bot. \n\nGüncel yemekhane menüsünü öğrenmek için `/yemekhane` yazabilirsin. `/yemekhane yarın` komutu ile yarının menüsünü de öğrenebilirsin. Belirli bir tarihin yemekhane menüsünü görmek için `/yemekhane (GG-AA-YYYY)` formatını kullanabilirsin.\n\n`/menu` komutu ile yemekhane servisine abone olabilirsin. Bu servis ile haftaiçi her gün, sabah 9'da güncel yemek menüsünü özel mesaj olarak gönderiyorum.\n\nGözüne çarpan hataları ya da botta olmasını istediğin özellikleri @frozsgy'e iletebilirsin.\n\nUmarım beni seversin :)"
         self.__commands['/help'] = "Help will arrive for the ones who really need."
 
     def respond(self, message):
         """Processes the message and adds the response (if exists) to the response list.
         Returns list of responses.
         """
+
+        message = TurkishText(message).lower()
 
         # Canned responses
         res = self.canned(message)
@@ -42,14 +44,16 @@ class Responses():
         res += self.commands(message)
 
         # Cafeteria function
-        if re.search('/yemekhane', TurkishText(message).lower()):
-            if re.search('yarın', TurkishText(message).lower()):
+        if re.search('/yemekhane', message):
+            if re.search('yarın', message):
                 res.append(self.food('tomorrow'))
+            elif len(message.split()) > 1:
+                res.append(self.food(message.split()[1]))
             else :
                 res.append(self.food())
 
         # Daily cafeteria menu function
-        if re.search('/menu', TurkishText(message).lower()):
+        if re.search('/menu', message):
             res.append(('service', 1))
 
         return res
@@ -78,13 +82,22 @@ class Responses():
         return res
 
     def food(self, date = 'today'):
-        """Fetches the menu offered at METU Cafeteria for today, or tomorrow.
+        """Fetches the menu offered at METU Cafeteria for today, tomorrow, or any given date.
         Returns string.
         """
         now = datetime.datetime.now()
-        if date == 'tomorrow':
-            now += datetime.timedelta(days = 1)
-        iday = now.strftime("%d-%m-%Y")
+        
+        date_search = re.search(r"(0{0,1}[1-9]|[12][0-9]|3[01])[- /.](0{0,1}[1-9]|1[012])[- /.](19|20)\d\d", date)
+        if date_search:
+            date_match = re.search(r"(\d{1,2})(.*?)(\d{1,2})(.*?)(\d{4})", date)
+            dates = date_match.groups()
+            iday = '-'.join(dates[::2])
+        else:
+            if date == 'tomorrow':
+                now += datetime.timedelta(days = 1)
+            else :
+                date = 'today'
+            iday = now.strftime("%d-%m-%Y")
         url = "https://kafeterya.metu.edu.tr/service.php?tarih=" + iday
         r = requests.get(url)
         page = r.content
@@ -97,31 +110,40 @@ class Responses():
                 daily[0].append(TurkishText(ogle[j]['name']).capitalize())
                 daily[1].append(TurkishText(aksam[j]['name']).capitalize())
         if daily != [[], []]:
-            menuResponse = ["🍴 Bugün yemekhanede şunlar varmış hocam:"]
-            if date == 'tomorrow':
+            if date == 'today':
+                menuResponse = ["🍴 Bugün yemekhanede şunlar varmış hocam:"]
+            elif date == 'tomorrow':
                 menuResponse = ["🍴 Yarın yemekhanede şunlar varmış hocam:"]
+            else:
+                menuResponse = ["🍴 %s tarihinde yemekhanede şunlar varmış hocam:" % date]
             menuResponse.append("")
             menuResponse.append("*Öğle Yemeği*")
             for j in range(4):
                 menuResponse.append("· " + daily[0][j])
             menuResponse.append("")
-            menuResponse.append("*Akşam Yemeği*")
-            for j in range(4):
-                menuResponse.append("· " + daily[1][j])
-            menuResponse.append("")
+            if daily[1][0] != "*":
+                menuResponse.append("*Akşam Yemeği*")
+                for j in range(4):
+                    menuResponse.append("· " + daily[1][j])
+                menuResponse.append("")
             menuResponse.append("🥬 Vejetaryen alternatifler:")
             menuResponse.append("")
             menuResponse.append("*Öğle Yemeği*")
             menuResponse.append("· " + daily[0][4])
             menuResponse.append("")
-            menuResponse.append("*Akşam Yemeği*")
-            menuResponse.append("· " + daily[1][4])
-            menuResponse.append("")
+            if daily[1][0] != "*":
+                menuResponse.append("*Akşam Yemeği*")
+                menuResponse.append("· " + daily[1][4])
+                menuResponse.append("")
             menuResponse.append("Afiyet olsun!")
             return '\n'.join(menuResponse)
         else :
-            if date == 'tomorrow':
+            if date == 'today':
+                return "Bugün yemek yok hocam 😔"
+            elif date == 'tomorrow':
                 return "Yarın yemek yok hocam 😔"
-            return "Bugün yemek yok hocam 😔"
+            else :
+                return "%s tarihinde yemek yok hocam 😔" % date
+            
 
    
