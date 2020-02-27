@@ -101,6 +101,10 @@ class Bot():
         
         if 'text' in body['message']:
             responses = self.__r.respond(body['message']['text'])
+        elif 'caption' in body['message']:
+            responses = self.__r.respond(body['message']['caption'])
+        else :
+            responses = []
 
         logText = "Message from: %s %s (%s) - %s - %s - ID: %s" % (messageFromFirstName, messageFromLastName, messageFromUserName, chatDate, content, messageID)
         if chatType != 'private' :
