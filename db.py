@@ -200,6 +200,27 @@ class DB():
             self.__conn.commit()
             return res
 
+    def remove_service(self, uid, service):
+        """Removes a service subscription from the database.
+        Returns boolean.
+        """
+        res = False
+        if self.check_service(uid, service) is False:
+            if self.__verbose:
+                print("User %s has not subscribed to service %s" % (uid, self.get_service_title(service)))
+            return res
+        try:
+            self.__cursor.execute(''' DELETE from subscriptions WHERE uid = ? and service = ? ''', (uid, service))
+            res = True
+            if self.__verbose:
+                print("User %s unsubscribed from %s service succesfully" % (uid, self.get_service_title(service)))
+        except:
+            if self.__verbose:
+                print("User %s cannot unsubscribe to %s service" % (uid, self.get_service_title(service)))
+        finally:
+            self.__conn.commit()
+            return res
+
     def check_if_service_sent_today(self, service):
         """Checks if the service blast has been sent today.
         Returns boolean.

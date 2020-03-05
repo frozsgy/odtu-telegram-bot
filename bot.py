@@ -124,7 +124,8 @@ class Bot():
             for m in responses:
                 if m == ('service', 1):
                     if self.__db.check_service(messageFromID, 1) is True:
-                        self.send_message(chatID, 'Yemekhane servisine zaten abonesiniz.', messageID)
+                        self.__db.remove_service(messageFromID, 1)
+                        self.send_message(chatID, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', messageID)
                     else :
                         self.__db.add_service(messageFromID, 1)
                         self.send_message(chatID, 'Yemekhane servisine abone oldunuz.', messageID)
