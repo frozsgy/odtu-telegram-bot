@@ -119,18 +119,20 @@ class Responses():
             menuResponse.append("")
             menuResponse.append("*Öğle Yemeği*")
             for j in range(4):
-                menuResponse.append("· " + daily[0][j])
+                if daily[0][j] != '*':
+                    menuResponse.append("· " + daily[0][j])
             menuResponse.append("")
             if daily[1][0] != "*":
                 menuResponse.append("*Akşam Yemeği*")
                 for j in range(4):
                     menuResponse.append("· " + daily[1][j])
                 menuResponse.append("")
-            menuResponse.append("🥬 Vejetaryen alternatifler:")
-            menuResponse.append("")
-            menuResponse.append("*Öğle Yemeği*")
-            menuResponse.append("· " + daily[0][4])
-            menuResponse.append("")
+            if daily[0][4] != '':
+                menuResponse.append("🥬 Vejetaryen alternatifler:")
+                menuResponse.append("")
+                menuResponse.append("*Öğle Yemeği*")
+                menuResponse.append("· " + daily[0][4])
+                menuResponse.append("")
             if daily[1][0] != "*":
                 menuResponse.append("*Akşam Yemeği*")
                 menuResponse.append("· " + daily[1][4])
