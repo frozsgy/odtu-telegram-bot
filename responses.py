@@ -36,6 +36,12 @@ class Responses():
         """
 
         message = TurkishText(message).lower()
+        if message.count('@') > 0:
+            message_tuple = message.split('@')
+            if 'odtubot' in message_tuple:
+                message = message_tuple[0]
+            else :
+                return []
 
         # Canned responses
         res = self.canned(message)
