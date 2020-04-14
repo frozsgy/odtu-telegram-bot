@@ -1,5 +1,6 @@
 from responses import Responses
 from db import DB
+from message import TelegramMessage
 
 import requests
 import json
@@ -78,78 +79,35 @@ class Bot():
             return False
 
     def parse_message(self, body):
-        """Parses messages.
+        """Generates a TelegramMessage object from the message.
         """
-        chat = body['message']['chat']
-        chatID = chat['id']
-        chatType = chat['type']
-        chatDate = body['message']['date']
-        if chatType == 'private':
-            # Person
-            chatFirstName = chat.get('first_name', '')
-            chatLastName = chat.get('last_name', '')
-            chatUserName = chat.get('username', '')
-        else :
-            # Group
-            chatTitle = chat['title']
-        
-        messageID = body['message']['message_id']
-        messageFrom = body['message']['from']
-        messageFromID = messageFrom['id']
-        messageFromIsBot = messageFrom['is_bot']
-        messageFromLanguageCode = 'TR'
-        messageFromFirstName = messageFrom.get('first_name', '')
-        messageFromLastName = messageFrom.get('last_name', '')
-        messageFromUserName = messageFrom.get('username', '')
-        messageFromLanguageCode = messageFrom.get('language_code', 'TR')
-        
-        content = ""
-
-        if 'text' in body['message']:
-            content += "Text: " + body['message']['text'] + " "
-        
-        if 'photo' in body['message']:
-            content += "Photo: " + body['message']['photo'][-1]['file_id'] + " "
-            if 'caption' in body['message']:
-                content += "Caption: " + body['message']['caption'] + " "
-
-        if 'document' in body['message']:
-            content += "File: " + body['message']['document']['file_id'] + " "
-            if 'caption' in body['message']:
-                content += "Caption: " + body['message']['caption'] + " "
-        
-        if 'text' in body['message']:
-            responses = self.__r.respond(body['message']['text'])
-        elif 'caption' in body['message']:
-            responses = self.__r.respond(body['message']['caption'])
-        else :
-            responses = []
-
-        logText = "Message from: %s %s (%s) - %s - %s - ID: %s" % (messageFromFirstName, messageFromLastName, messageFromUserName, chatDate, content, messageID)
-        if chatType != 'private' :
-            logText += " - Group: " + chatTitle
+        tm = TelegramMessage(body)
+        content = tm.content
+        responses = self.__r.respond(tm.text) if tm.has_text else []
+        log_text = tm.generate_log_text()
 
         if self.__verbose is True:
-            print(logText)
+            print(log_text)
         if self.__logging is True:
-            if chatType == 'private': 
-                self.__db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, 0)
-            else :
-                self.__db.log(messageFromID, messageFromFirstName, messageFromLastName, messageFromUserName, messageID, chatDate, content, chatID, chatTitle)
+            self.__db.log(*tm.generate_log_tuple())
             # TODO
             # Log responses from the bot
 
-        if responses is not []:
-            for m in responses:
-                if m == ('service', 1):
-                    if self.__db.check_service(messageFromID, 1) is True:
-                        self.__db.remove_service(messageFromID, 1)
-                        self.send_message(chatID, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', messageID)
-                    else :
-                        self.__db.add_service(messageFromID, 1)
-                        self.send_message(chatID, 'Yemekhane servisine abone oldunuz.', messageID)
+        self.respond_to_message(tm, responses)
+
+    def respond_to_message(self, tm, responses):
+        """Sends responses to the messages.
+        """
+        for m in responses:
+            if m == ('service', 1):
+                if self.__db.check_service(tm.message_from_id, 1) is True:
+                    self.__db.remove_service(tm.message_from_id, 1)
+                    self.send_message(tm.chat_id, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', tm.message_id)
                 else :
-                    self.send_message(chatID, m, messageID)
+                    self.__db.add_service(tm.message_from_id, 1)
+                    self.send_message(tm.chat_id, 'Yemekhane servisine abone oldunuz.', tm.message_id)
+            else :
+                self.send_message(tm.chat_id, m, tm.message_id)
 
 
     def parse_inline(self, body):
