@@ -58,6 +58,25 @@ class Bot():
         else :
             return False
 
+    def get_file(self, file_id):
+        """Gets files from the Telegram Server.
+        Returns boolean.
+        """
+        url = self.__url + "/getFile"
+        params = {'file_id': file_id}
+        r = requests.post(url, params)
+        page = r.content
+        items = json.loads(page)
+        if items['ok'] is True:
+            res = items['result']
+            file_path = res['file_path']
+            url = "https://api.telegram.org/file/bot" + self.__token + "/" + file_path
+            # TODO - to handle file processing
+            # print(url + file_path)    
+            return True
+        else :
+            return False
+
     def parse_message(self, body):
         """Parses messages.
         """
