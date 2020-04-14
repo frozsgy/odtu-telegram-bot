@@ -27,7 +27,7 @@ class DB():
         try :
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, data varchar) ''')
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS people (uid varchar NOT NULL UNIQUE , fname text, lname text, uname text) ''')
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL UNIQUE, time date, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid)) ''')
+            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL, time date, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid)) ''')
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS groups (gid varchar NOT NULL UNIQUE, title text) ''')
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY, name varchar) ''')
             self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS subscriptions (uid varchar NOT NULL, service INTEGER, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(service) REFERENCES services(id)) ''')
