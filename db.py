@@ -19,6 +19,7 @@ class DB():
         self.__verbose = verbose
 
     def __del__(self):
+        self.__cursor.close()
         self.__conn.close()
 
     def create_db(self, secret):
