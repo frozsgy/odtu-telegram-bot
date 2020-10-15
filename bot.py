@@ -6,6 +6,7 @@ import requests
 import json
 import datetime
 
+
 class Bot():
     """Class for handling all communication with the Telegram API. 
 
@@ -16,7 +17,7 @@ class Bot():
     # https://api.telegram.org/bot<token>/METHOD_NAME
     __url = "https://api.telegram.org/bot"
 
-    def __init__(self, verbose = False, logging = False):
+    def __init__(self, verbose=False, logging=False):
         self.__db = DB(verbose)
         self.__token = self.__db.get_token()
         self.__url += self.__token
@@ -35,9 +36,9 @@ class Bot():
         """
         url = self.__url + "/getUpdates"
         offset = self.__db.get_offset()
-        params = {'offset': int(offset) + 1, 
-                  'limit': 100, 
-                  'timeout': 0, 
+        params = {'offset': int(offset) + 1,
+                  'limit': 100,
+                  'timeout': 0,
                   'allowed_updates': ['message']}
         r = requests.post(url, params)
         page = r.content
@@ -46,17 +47,17 @@ class Bot():
             res = items['result']
             for i in res:
                 if 'message' in i:
-                    self.parse_message(i)                    
+                    self.parse_message(i)
                 elif 'inline_query' in i:
                     self.parse_inline(i)
-                else :
+                else:
                     # TODO
                     pass
             if len(res) > 0:
                 newOffset = res[-1]['update_id']
                 self.__db.update_offset(newOffset)
             return True
-        else :
+        else:
             return False
 
     def get_file(self, file_id):
@@ -73,9 +74,9 @@ class Bot():
             file_path = res['file_path']
             url = "https://api.telegram.org/file/bot" + self.__token + "/" + file_path
             # TODO - to handle file processing
-            # print(url + file_path)    
+            # print(url + file_path)
             return True
-        else :
+        else:
             return False
 
     def parse_message(self, body):
@@ -102,13 +103,14 @@ class Bot():
             if m == ('service', 1):
                 if self.__db.check_service(tm.message_from_id, 1) is True:
                     self.__db.remove_service(tm.message_from_id, 1)
-                    self.send_message(tm.chat_id, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', tm.message_id)
-                else :
+                    self.send_message(
+                        tm.chat_id, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', tm.message_id)
+                else:
                     self.__db.add_service(tm.message_from_id, 1)
-                    self.send_message(tm.chat_id, 'Yemekhane servisine abone oldunuz.', tm.message_id)
-            else :
+                    self.send_message(
+                        tm.chat_id, 'Yemekhane servisine abone oldunuz.', tm.message_id)
+            else:
                 self.send_message(tm.chat_id, m, tm.message_id)
-
 
     def parse_inline(self, body):
         """Parses inline messages for inline bot functions.
@@ -124,8 +126,7 @@ class Bot():
         inlineID = inline['id']
         inlineQuery = inline['query']
 
-
-        # TODO 
+        # TODO
         print("Inline")
 
     def send_inline_response(self, inline_query_id, results):
@@ -138,11 +139,10 @@ class Bot():
         items = json.loads(page)
         if items['ok'] == True:
             return True
-        else :
+        else:
             return False
 
-
-    def send_message(self, chat_id, message, reply = 0):
+    def send_message(self, chat_id, message, reply=0):
         """Send messages as the bot.
         chat_id -- The chat ID to send the message to
         message -- The message body
@@ -151,7 +151,7 @@ class Bot():
         """
         url = self.__url + "/sendMessage"
         params = {'chat_id': chat_id,
-                  'text': message, 
+                  'text': message,
                   'parse_mode': 'Markdown'}
         if reply != 0:
             params['reply_to_message_id'] = reply
@@ -160,7 +160,7 @@ class Bot():
         items = json.loads(page)
         if items['ok'] == True:
             return True
-        else :
+        else:
             return False
 
     def send_service_messages(self):
@@ -176,4 +176,3 @@ class Bot():
                     for i in users:
                         self.send_message(i, val())
                     self.__db.mark_service_sent_today(key)
-

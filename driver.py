@@ -14,8 +14,8 @@ for i in sys.argv:
 
 b = Bot(verbose, logging)
 
- 
-def run_bot(verbose = False, logging = False):
+
+def run_bot(verbose=False, logging=False):
     starttime = time.time()
     while True:
         try:
@@ -30,7 +30,8 @@ def run_bot(verbose = False, logging = False):
         except KeyboardInterrupt:
             print("See y'all folks!")
             exit()
-    
+
+
 if __name__ == "__main__":
     b.hello()
     if verbose is True:
