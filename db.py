@@ -2,6 +2,7 @@ import sqlite3
 import os
 import datetime
 
+
 class DB():
     """Class for handling database methods. 
 
@@ -13,7 +14,7 @@ class DB():
     __verbose = False
     __location = os.path.dirname(os.path.realpath(__file__))
 
-    def __init__(self, verbose = False):
+    def __init__(self, verbose=False):
         self.__conn = sqlite3.connect(self.__location + '/bot.db')
         self.__cursor = self.__conn.cursor()
         self.__verbose = verbose
@@ -25,14 +26,21 @@ class DB():
     def create_db(self, secret):
         """Creates the database and tables. This method should be called only during the installation.
         """
-        try :
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, data varchar) ''')
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS people (uid varchar NOT NULL UNIQUE , fname text, lname text, uname text) ''')
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL, time date, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid)) ''')
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS groups (gid varchar NOT NULL UNIQUE, title text) ''')
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY, name varchar) ''')
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS subscriptions (uid varchar NOT NULL, service INTEGER, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(service) REFERENCES services(id)) ''')
-            self.__cursor.execute(''' CREATE TABLE IF NOT EXISTS servicedays (id INTEGER, day date, FOREIGN KEY(id) REFERENCES services(id)) ''')
+        try:
+            self.__cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, data varchar) ''')
+            self.__cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS people (uid varchar NOT NULL UNIQUE , fname text, lname text, uname text) ''')
+            self.__cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL, time date, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid)) ''')
+            self.__cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS groups (gid varchar NOT NULL UNIQUE, title text) ''')
+            self.__cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY, name varchar) ''')
+            self.__cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS subscriptions (uid varchar NOT NULL, service INTEGER, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(service) REFERENCES services(id)) ''')
+            self.__cursor.execute(
+                ''' CREATE TABLE IF NOT EXISTS servicedays (id INTEGER, day date, FOREIGN KEY(id) REFERENCES services(id)) ''')
             self.__cursor.execute(''' INSERT into groups VALUES(0, 'private') ''')
             self.__cursor.execute(''' INSERT into settings VALUES(NULL, 0) ''')
             self.__cursor.execute(''' INSERT into settings VALUES(NULL, ?) ''', (secret,))
@@ -66,7 +74,7 @@ class DB():
         try:
             self.__cursor.execute(''' UPDATE settings SET data = ? WHERE id = 1 ''', (offset,))
             if self.__verbose:
-                print("Offset updated with %s" %offset)
+                print("Offset updated with %s" % offset)
         except:
             res = False
             print("Offset could not be updated")
@@ -82,7 +90,7 @@ class DB():
         status = self.__cursor.fetchone()[0]
         if status == 1:
             return True
-        else :
+        else:
             return False
 
     def add_user(self, uid, fname, lname, uname):
@@ -94,9 +102,10 @@ class DB():
             if self.__verbose:
                 print("User %s %s (%s) exists in the database" % (fname, lname, uname))
             return res
-        else :
+        else:
             try:
-                self.__cursor.execute(''' INSERT into people VALUES(?,?,?,?) ''', (uid, fname, lname, uname))
+                self.__cursor.execute(''' INSERT into people VALUES(?,?,?,?) ''',
+                                      (uid, fname, lname, uname))
                 if self.__verbose:
                     print("User %s %s (%s) created succesfully" % (fname, lname, uname))
             except:
@@ -115,7 +124,7 @@ class DB():
         status = self.__cursor.fetchone()[0]
         if status == 1:
             return True
-        else :
+        else:
             return False
 
     def add_group(self, gid, title):
@@ -127,7 +136,7 @@ class DB():
             if self.__verbose:
                 print("Group %s (%s) exists in the database" % (title, gid))
             return res
-        else :
+        else:
             try:
                 self.__cursor.execute(''' INSERT into groups VALUES(?,?) ''', (gid, title))
                 if self.__verbose:
@@ -140,7 +149,7 @@ class DB():
                 self.__conn.commit()
                 return res
 
-    def log(self, uid, fname, lname, uname, mid, time, content, gid, gtitle = 'private'):
+    def log(self, uid, fname, lname, uname, mid, time, content, gid, gtitle='private'):
         """Logs the activity to the database.
         Returns boolean.
         """
@@ -149,7 +158,8 @@ class DB():
             self.add_group(gid, gtitle)
         res = True
         try:
-            self.__cursor.execute(''' INSERT into logs VALUES(?,?,?,?,?) ''', (uid, mid, time, content, gid))
+            self.__cursor.execute(''' INSERT into logs VALUES(?,?,?,?,?) ''',
+                                  (uid, mid, time, content, gid))
             if self.__verbose:
                 print("Message %s logged succesfully" % (mid))
         except:
@@ -166,18 +176,19 @@ class DB():
         try:
             self.__cursor.execute(''' SELECT name from services WHERE id = ? ''', (sid,))
             return self.__cursor.fetchone()[0]
-        except :
+        except:
             return False
 
     def check_service(self, uid, service):
         """Checks if a user with the given user id subscribed to the service.
         Returns boolean.
         """
-        self.__cursor.execute(''' SELECT COUNT(*) from subscriptions WHERE uid = ? and service = ?''', (uid,service))
+        self.__cursor.execute(
+            ''' SELECT COUNT(*) from subscriptions WHERE uid = ? and service = ?''', (uid, service))
         status = self.__cursor.fetchone()[0]
         if status == 1:
             return True
-        else :
+        else:
             return False
 
     def add_service(self, uid, service):
@@ -187,16 +198,19 @@ class DB():
         res = True
         if self.check_service(uid, service) is True:
             if self.__verbose:
-                print("User %s already subscribed to service %s" % (uid, self.get_service_title(service)))
+                print("User %s already subscribed to service %s" %
+                      (uid, self.get_service_title(service)))
             return res
         try:
             self.__cursor.execute(''' INSERT into subscriptions VALUES(?,?) ''', (uid, service))
             if self.__verbose:
-                print("User %s subscribed to %s service succesfully" % (uid, self.get_service_title(service)))
+                print("User %s subscribed to %s service succesfully" %
+                      (uid, self.get_service_title(service)))
         except:
             res = False
             if self.__verbose:
-                print("User %s cannot subscribe to %s service" % (uid, self.get_service_title(service)))
+                print("User %s cannot subscribe to %s service" %
+                      (uid, self.get_service_title(service)))
         finally:
             self.__conn.commit()
             return res
@@ -208,16 +222,20 @@ class DB():
         res = False
         if self.check_service(uid, service) is False:
             if self.__verbose:
-                print("User %s has not subscribed to service %s" % (uid, self.get_service_title(service)))
+                print("User %s has not subscribed to service %s" %
+                      (uid, self.get_service_title(service)))
             return res
         try:
-            self.__cursor.execute(''' DELETE from subscriptions WHERE uid = ? and service = ? ''', (uid, service))
+            self.__cursor.execute(
+                ''' DELETE from subscriptions WHERE uid = ? and service = ? ''', (uid, service))
             res = True
             if self.__verbose:
-                print("User %s unsubscribed from %s service succesfully" % (uid, self.get_service_title(service)))
+                print("User %s unsubscribed from %s service succesfully" %
+                      (uid, self.get_service_title(service)))
         except:
             if self.__verbose:
-                print("User %s cannot unsubscribe to %s service" % (uid, self.get_service_title(service)))
+                print("User %s cannot unsubscribe to %s service" %
+                      (uid, self.get_service_title(service)))
         finally:
             self.__conn.commit()
             return res
@@ -228,11 +246,12 @@ class DB():
         """
         now = datetime.datetime.now()
         today = str(now.year) + str(now.month) + str(now.day)
-        self.__cursor.execute(''' SELECT COUNT(*) from servicedays WHERE id = ? and day = ? ''', (service, today))
+        self.__cursor.execute(
+            ''' SELECT COUNT(*) from servicedays WHERE id = ? and day = ? ''', (service, today))
         status = self.__cursor.fetchone()[0]
         if status == 1:
             return True
-        else :
+        else:
             return False
 
     def mark_service_sent_today(self, service):
@@ -259,7 +278,7 @@ class DB():
         if self.check_if_group_exists(gid):
             self.__cursor.execute(''' SELECT title from groups WHERE gid = ? ''', (gid,))
             return self.__cursor.fetchone()[0]
-        else :
+        else:
             return False
 
     def get_user(self, uid):
@@ -268,7 +287,7 @@ class DB():
         if self.check_if_user_exists(uid):
             self.__cursor.execute(''' SELECT * from people WHERE uid = ? ''', (uid,))
             return self.__cursor.fetchone()
-        else :
+        else:
             return False
 
     def get_service_users(self, service):
@@ -282,7 +301,7 @@ class DB():
         """
         self.__cursor.execute(''' SELECT * FROM logs ORDER by mid ''')
         print("Printing all logs")
-        for i  in self.__cursor.fetchall():
+        for i in self.__cursor.fetchall():
             print(i)
 
     def list_logs_from_user(self, uid):
@@ -294,15 +313,16 @@ class DB():
             print("Printing all logs from user %s %s (%s)" % (user[1], user[2], user[3]))
             for i in self.__cursor.fetchall():
                 print(i)
-        else :
+        else:
             print("No user exists with User ID %s" % uid)
 
     def list_logs_with_user(self):
         """Prints all logs and the user details as a joined table from the database.
         """
-        self.__cursor.execute(''' SELECT * FROM logs INNER JOIN people ON logs.uid = people.uid ORDER by mid ''')
+        self.__cursor.execute(
+            ''' SELECT * FROM logs INNER JOIN people ON logs.uid = people.uid ORDER by mid ''')
         print("Printing all logs with user data")
-        for i  in self.__cursor.fetchall():
+        for i in self.__cursor.fetchall():
             print(i)
 
     def list_logs_from_group(self, gid):
@@ -314,7 +334,7 @@ class DB():
             print("Printing all logs from group %s (%s)" % (gtitle, gid))
             for i in self.__cursor.fetchall():
                 print(i)
-        else :
+        else:
             print("No group exists with Group ID %s" % gid)
 
     def list_db(self):
@@ -322,7 +342,7 @@ class DB():
         """
         self.__cursor.execute(''' SELECT name FROM sqlite_master WHERE type='table' ''')
         print("Printing all databases")
-        for i  in self.__cursor.fetchall():
+        for i in self.__cursor.fetchall():
             print(i)
 
     def list_users(self):
@@ -330,7 +350,7 @@ class DB():
         """
         self.__cursor.execute(''' SELECT * FROM people ORDER by uid ''')
         print("Printing all users")
-        for i  in self.__cursor.fetchall():
+        for i in self.__cursor.fetchall():
             print(i)
 
     def list_groups(self):
@@ -338,5 +358,5 @@ class DB():
         """
         self.__cursor.execute(''' SELECT * FROM groups ORDER by gid ''')
         print("Printing all groups")
-        for i  in self.__cursor.fetchall():
+        for i in self.__cursor.fetchall():
             print(i)

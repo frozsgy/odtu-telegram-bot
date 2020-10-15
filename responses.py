@@ -5,6 +5,7 @@ import datetime
 
 from turkish import TurkishText
 
+
 class Responses():
     """Class for handling responses to messages. 
 
@@ -27,7 +28,8 @@ class Responses():
         self.__canned['günaydın'] = "Günaydın hocam!"
 
         # Command responses
-        self.__commands['/start'] = "Merhaba! Ben ODTÜ Bot. \n\nGüncel yemekhane menüsünü öğrenmek için `/yemekhane` yazabilirsin. `/yemekhane yarın` komutu ile yarının menüsünü de öğrenebilirsin. Belirli bir tarihin yemekhane menüsünü görmek için `/yemekhane (GG-AA-YYYY)` formatını kullanabilirsin.\n\n`/menu` komutu ile yemekhane servisine abone olabilirsin. Bu servis ile haftaiçi her gün, sabah 9'da güncel yemek menüsünü özel mesaj olarak gönderiyorum.\n\nGözüne çarpan hataları ya da botta olmasını istediğin özellikleri @frozsgy'e iletebilirsin.\n\nUmarım beni seversin :)"
+        self.__commands[
+            '/start'] = "Merhaba! Ben ODTÜ Bot. \n\nGüncel yemekhane menüsünü öğrenmek için `/yemekhane` yazabilirsin. `/yemekhane yarın` komutu ile yarının menüsünü de öğrenebilirsin. Belirli bir tarihin yemekhane menüsünü görmek için `/yemekhane (GG-AA-YYYY)` formatını kullanabilirsin.\n\n`/menu` komutu ile yemekhane servisine abone olabilirsin. Bu servis ile haftaiçi her gün, sabah 9'da güncel yemek menüsünü özel mesaj olarak gönderiyorum.\n\nGözüne çarpan hataları ya da botta olmasını istediğin özellikleri @frozsgy'e iletebilirsin.\n\nUmarım beni seversin :)"
         self.__commands['/help'] = "Help will arrive for the ones who really need."
 
     def respond(self, message):
@@ -40,7 +42,7 @@ class Responses():
             message_tuple = message.split('@')
             if 'odtubot' in message_tuple:
                 message = message_tuple[0]
-            else :
+            else:
                 return []
 
         # Canned responses
@@ -55,7 +57,7 @@ class Responses():
                 res.append(self.food('tomorrow'))
             elif len(message.split()) > 1:
                 res.append(self.food(message.split()[1]))
-            else :
+            else:
                 res.append(self.food())
 
         # Daily cafeteria menu function
@@ -87,21 +89,22 @@ class Responses():
                 res.append(val)
         return res
 
-    def food(self, date = 'today'):
+    def food(self, date='today'):
         """Fetches the menu offered at METU Cafeteria for today, tomorrow, or any given date.
         Returns string.
         """
         now = datetime.datetime.now()
-        
-        date_search = re.search(r"(0{0,1}[1-9]|[12][0-9]|3[01])[- /.](0{0,1}[1-9]|1[012])[- /.](19|20)\d\d", date)
+
+        date_search = re.search(
+            r"(0{0,1}[1-9]|[12][0-9]|3[01])[- /.](0{0,1}[1-9]|1[012])[- /.](19|20)\d\d", date)
         if date_search:
             date_match = re.search(r"(\d{1,2})(.*?)(\d{1,2})(.*?)(\d{4})", date)
             dates = date_match.groups()
             iday = '-'.join(dates[::2])
         else:
             if date == 'tomorrow':
-                now += datetime.timedelta(days = 1)
-            else :
+                now += datetime.timedelta(days=1)
+            else:
                 date = 'today'
             iday = now.strftime("%d-%m-%Y")
         url = "https://kafeterya.metu.edu.tr/service.php?tarih=" + iday
@@ -145,13 +148,10 @@ class Responses():
                 menuResponse.append("")
             menuResponse.append("Afiyet olsun!")
             return '\n'.join(menuResponse)
-        else :
+        else:
             if date == 'today':
                 return "Bugün yemek yok hocam 😔"
             elif date == 'tomorrow':
                 return "Yarın yemek yok hocam 😔"
-            else :
+            else:
                 return "%s tarihinde yemek yok hocam 😔" % date
-            
-
-   

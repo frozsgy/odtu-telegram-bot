@@ -20,7 +20,7 @@ class TurkishText():
         for i in self.text:
             if i in self.l:
                 res += self.u[self.l.index(i)]
-            else :
+            else:
                 res += i.upper()
         return res
 
@@ -32,7 +32,7 @@ class TurkishText():
         for i in self.text:
             if i in self.u:
                 res += self.l[self.u.index(i)]
-            else :
+            else:
                 res += i.lower()
         return res
 
