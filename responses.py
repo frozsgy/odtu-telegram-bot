@@ -130,12 +130,14 @@ class Responses:
             for matchNum, match in enumerate(matches, start=1):
                 for groupNum in range(0, len(match.groups())):
                     groupNum += 1
-                    daily[0].append(TurkishText(match.group(groupNum)).capitalize())
+                    daily[0].append(
+                        TurkishText(match.group(groupNum)).capitalize())
             matches = re.finditer(veggie_regex, daily_menu, re.MULTILINE)
             for matchNum, match in enumerate(matches, start=1):
                 for groupNum in range(0, len(match.groups())):
                     groupNum += 1
-                    daily[0].append(TurkishText(match.group(groupNum)).capitalize())
+                    daily[0].append(
+                        TurkishText(match.group(groupNum)).capitalize())
         if daily != [[], []]:
             if date == 'today':
                 menu_response = ["🍴 Bugün yemekhanede şunlar varmış hocam:"]
