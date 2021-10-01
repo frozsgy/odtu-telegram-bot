@@ -109,24 +109,35 @@ class Responses:
             date_match = re.search(r"(\d{1,2})(.*?)(\d{1,2})(.*?)(\d{4})",
                                    date)
             dates = date_match.groups()
-            iday = '-'.join(dates[::2])
+            iday = '/'.join(dates[::2])
         else:
             if date == 'tomorrow':
                 now += datetime.timedelta(days=1)
             else:
                 date = 'today'
-            iday = now.strftime("%d-%m-%Y")
-        url = "https://kafeterya.metu.edu.tr/service.php?tarih=" + iday
-        r = requests.get(url)
-        page = r.content
-        items = json.loads(page)
+            iday = now.strftime("%d/%m/%Y")
+        url = "https://kafeterya.metu.edu.tr/views/ajax?date_filter[value][date]=" + iday + "&view_name=yemek_listesi&view_display_id=block"
+        veggie_regex = r"<div class=\"vejeteryan\">Vejetaryen: (.*?)<\/div>"
+        regex = r"<span property=\"dc:title\" content=\"(.*?)\""
+        response = requests.request("POST", url)
+        ajax_response = response.json()
         daily = [[], []]
-        if items is not None:
-            ogle = items['ogle']
-            aksam = items['aksam']
-            for j in range(5):
-                daily[0].append(TurkishText(ogle[j]['name']).capitalize())
-                daily[1].append(TurkishText(aksam[j]['name']).capitalize())
+        if len(ajax_response) > 1:
+            data = ajax_response[1]
+            daily_menu = data['data']
+
+            matches = re.finditer(regex, daily_menu, re.MULTILINE)
+            for matchNum, match in enumerate(matches, start=1):
+                for groupNum in range(0, len(match.groups())):
+                    groupNum += 1
+                    daily[0].append(
+                        TurkishText(match.group(groupNum)).capitalize())
+            matches = re.finditer(veggie_regex, daily_menu, re.MULTILINE)
+            for matchNum, match in enumerate(matches, start=1):
+                for groupNum in range(0, len(match.groups())):
+                    groupNum += 1
+                    daily[0].append(
+                        TurkishText(match.group(groupNum)).capitalize())
         if daily != [[], []]:
             if date == 'today':
                 menu_response = ["🍴 Bugün yemekhanede şunlar varmış hocam:"]
@@ -142,20 +153,11 @@ class Responses:
                 if daily[0][j] != '*':
                     menu_response.append("· " + daily[0][j])
             menu_response.append("")
-            if daily[1][0] != "*":
-                menu_response.append("*Akşam Yemeği*")
-                for j in range(4):
-                    menu_response.append("· " + daily[1][j])
-                menu_response.append("")
             if daily[0][4] != '':
                 menu_response.append("🥬 Vejetaryen alternatifler:")
                 menu_response.append("")
                 menu_response.append("*Öğle Yemeği*")
                 menu_response.append("· " + daily[0][4])
-                menu_response.append("")
-            if daily[1][0] != "*":
-                menu_response.append("*Akşam Yemeği*")
-                menu_response.append("· " + daily[1][4])
                 menu_response.append("")
             menu_response.append("Afiyet olsun!")
             return '\n'.join(menu_response)
