@@ -134,3 +134,9 @@ secrets.py
 
 # sqlite databases
 *.db
+
+# postgres database
+postgres-data/
+
+# pycharm files
+.idea/

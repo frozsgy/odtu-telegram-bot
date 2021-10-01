@@ -6,7 +6,8 @@ This repository contains a tiny Telegram Bot that was developed to understand th
 
 1. Get yourself a Bot account and a token at [Telegram Bots](https://core.telegram.org/bots).
 2. Set up your environment and install dependencies.
-3. Run `install.py` and enter your Telegram Bot Token.
+3. Replace `YOUR-TELEGRAM-BOT-TOKEN` in the `init-tables.sql` file with your Telegram Bot Token.
+4. Import `init-tables.sql` into your Postgres database.
 
 ## Usage
 
@@ -47,6 +48,11 @@ sudo systemctl enable telegram.service
 
 * Python 3
 * Requests
+* PostgreSQL
+
+## Running via Docker
+
+Simply use `docker-compose up`. 
 
 ## Bugs, Comments, Ideas?
 

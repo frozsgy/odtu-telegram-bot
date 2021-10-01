@@ -1,4 +1,4 @@
-import sqlite3
+import psycopg2
 import os
 import datetime
 
@@ -12,53 +12,21 @@ class DB:
     """
 
     __verbose = False
-    __location = os.path.dirname(os.path.realpath(__file__))
 
     def __init__(self, verbose=False):
-        self.__conn = sqlite3.connect(self.__location + '/bot.db')
+        self.__conn = psycopg2.connect(
+            database=os.environ['POSTGRES_DB'],
+            user=os.environ['POSTGRES_USER'],
+            password=os.environ['POSTGRES_PASSWORD'],
+            host="db",
+            port="5432",
+        )
         self.__cursor = self.__conn.cursor()
         self.__verbose = verbose
 
     def __del__(self):
         self.__cursor.close()
         self.__conn.close()
-
-    def create_db(self, secret):
-        """Creates the database and tables. This method should be called only during the installation.
-        """
-        try:
-            self.__cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS settings (id INTEGER PRIMARY KEY, data varchar) '''
-            )
-            self.__cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS people (uid varchar NOT NULL UNIQUE , fname text, lname text, uname text) '''
-            )
-            self.__cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL, time date, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid)) '''
-            )
-            self.__cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS groups (gid varchar NOT NULL UNIQUE, title text) '''
-            )
-            self.__cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY, name varchar) '''
-            )
-            self.__cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS subscriptions (uid varchar NOT NULL, service INTEGER, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(service) REFERENCES services(id)) '''
-            )
-            self.__cursor.execute(
-                ''' CREATE TABLE IF NOT EXISTS servicedays (id INTEGER, day date, FOREIGN KEY(id) REFERENCES services(id)) '''
-            )
-            self.__cursor.execute(
-                ''' INSERT into groups VALUES(0, 'private') ''')
-            self.__cursor.execute(''' INSERT into settings VALUES(NULL, 0) ''')
-            self.__cursor.execute(''' INSERT into settings VALUES(NULL, ?) ''',
-                                  (secret, ))
-            self.__cursor.execute(
-                ''' INSERT into services VALUES(1, 'yemekhane') ''')
-        except:
-            print('Cannot create DB')
-        finally:
-            self.__conn.commit()
 
     def get_token(self):
         """Fetches the Telegram Bot API Token from the database.
@@ -84,7 +52,7 @@ class DB:
         res = True
         try:
             self.__cursor.execute(
-                ''' UPDATE settings SET data = ? WHERE id = 1 ''', (offset, ))
+                ''' UPDATE settings SET data = (%s) WHERE id = 1 ''', (offset, ))
             if self.__verbose:
                 print("Offset updated with %s" % offset)
         except:
@@ -99,7 +67,7 @@ class DB:
         Returns boolean.
         """
         self.__cursor.execute(
-            ''' SELECT COUNT(*) from people WHERE uid = ? ''', (uid, ))
+            ''' SELECT COUNT(*) from people WHERE uid = (%s) ''', (uid, ))
         status = self.__cursor.fetchone()[0]
         if status == 1:
             return True
@@ -119,7 +87,7 @@ class DB:
         else:
             try:
                 self.__cursor.execute(
-                    ''' INSERT into people VALUES(?,?,?,?) ''',
+                    ''' INSERT into people VALUES((%s),(%s),(%s),(%s)) ''',
                     (uid, fname, lname, uname))
                 if self.__verbose:
                     print("User %s %s (%s) created succesfully" %
@@ -138,7 +106,7 @@ class DB:
         Returns boolean.
         """
         self.__cursor.execute(
-            ''' SELECT COUNT(*) from groups WHERE gid = ? ''', (gid, ))
+            ''' SELECT COUNT(*) from groups WHERE gid = (%s) ''', (gid, ))
         status = self.__cursor.fetchone()[0]
         if status == 1:
             return True
@@ -156,7 +124,7 @@ class DB:
             return res
         else:
             try:
-                self.__cursor.execute(''' INSERT into groups VALUES(?,?) ''',
+                self.__cursor.execute(''' INSERT into groups VALUES((%s),(%s)) ''',
                                       (gid, title))
                 if self.__verbose:
                     print("Group %s (%s) created succesfully" % (title, gid))
@@ -186,7 +154,7 @@ class DB:
             self.add_group(gid, gtitle)
         res = True
         try:
-            self.__cursor.execute(''' INSERT into logs VALUES(?,?,?,?,?) ''',
+            self.__cursor.execute(''' INSERT into logs VALUES((%s),(%s),(%s),(%s),(%s)) ''',
                                   (uid, mid, time, content, gid))
             if self.__verbose:
                 print("Message %s logged succesfully" % (mid))
@@ -203,7 +171,7 @@ class DB:
         """
         try:
             self.__cursor.execute(
-                ''' SELECT name from services WHERE id = ? ''', (sid, ))
+                ''' SELECT name from services WHERE id = (%s) ''', (sid, ))
             return self.__cursor.fetchone()[0]
         except:
             return False
@@ -213,7 +181,7 @@ class DB:
         Returns boolean.
         """
         self.__cursor.execute(
-            ''' SELECT COUNT(*) from subscriptions WHERE uid = ? and service = ?''',
+            ''' SELECT COUNT(*) from subscriptions WHERE uid = (%s) and service = (%s)''',
             (uid, service))
         status = self.__cursor.fetchone()[0]
         if status == 1:
@@ -233,7 +201,7 @@ class DB:
             return res
         try:
             self.__cursor.execute(
-                ''' INSERT into subscriptions VALUES(?,?) ''', (uid, service))
+                ''' INSERT into subscriptions VALUES((%s),(%s)) ''', (uid, service))
             if self.__verbose:
                 print("User %s subscribed to %s service succesfully" %
                       (uid, self.get_service_title(service)))
@@ -258,7 +226,7 @@ class DB:
             return res
         try:
             self.__cursor.execute(
-                ''' DELETE from subscriptions WHERE uid = ? and service = ? ''',
+                ''' DELETE from subscriptions WHERE uid = (%s) and service = (%s) ''',
                 (uid, service))
             res = True
             if self.__verbose:
@@ -279,7 +247,7 @@ class DB:
         now = datetime.datetime.now()
         today = str(now.year) + str(now.month) + str(now.day)
         self.__cursor.execute(
-            ''' SELECT COUNT(*) from servicedays WHERE id = ? and day = ? ''',
+            ''' SELECT COUNT(*) from servicedays WHERE id = (%s) and day = (%s) ''',
             (service, today))
         status = self.__cursor.fetchone()[0]
         if status == 1:
@@ -295,7 +263,7 @@ class DB:
         today = str(now.year) + str(now.month) + str(now.day)
         res = True
         try:
-            self.__cursor.execute(''' INSERT into servicedays VALUES(?,?) ''',
+            self.__cursor.execute(''' INSERT into servicedays VALUES((%s),(%s)) ''',
                                   (service, today))
             if self.__verbose:
                 print("Service days for %s updated as sent" %
@@ -312,7 +280,7 @@ class DB:
         """
         if self.check_if_group_exists(gid):
             self.__cursor.execute(
-                ''' SELECT title from groups WHERE gid = ? ''', (gid, ))
+                ''' SELECT title from groups WHERE gid = (%s) ''', (gid, ))
             return self.__cursor.fetchone()[0]
         else:
             return False
@@ -321,7 +289,7 @@ class DB:
         """Fetches the user details with the given user id from the database.
         """
         if self.check_if_user_exists(uid):
-            self.__cursor.execute(''' SELECT * from people WHERE uid = ? ''',
+            self.__cursor.execute(''' SELECT * from people WHERE uid = (%s) ''',
                                   (uid, ))
             return self.__cursor.fetchone()
         else:
@@ -331,7 +299,7 @@ class DB:
         """Fetches the user ids subscribed to the given service from the database.
         """
         self.__cursor.execute(
-            ''' SELECT * from subscriptions WHERE service = ? ''', (service, ))
+            ''' SELECT * from subscriptions WHERE service = (%s) ''', (service, ))
         return self.__cursor.fetchall()
 
     def list_logs(self):
@@ -348,7 +316,7 @@ class DB:
         if self.check_if_user_exists(uid):
             user = self.get_user(uid)
             self.__cursor.execute(
-                ''' SELECT * FROM logs WHERE uid = ? ORDER by mid ''', (uid, ))
+                ''' SELECT * FROM logs WHERE uid = (%s) ORDER by mid ''', (uid, ))
             print("Printing all logs from user %s %s (%s)" %
                   (user[1], user[2], user[3]))
             for i in self.__cursor.fetchall():
@@ -372,7 +340,7 @@ class DB:
         if self.check_if_group_exists(gid):
             gtitle = self.get_group_title(gid)
             self.__cursor.execute(
-                ''' SELECT * FROM logs WHERE gid = ? ORDER by mid ''', (gid, ))
+                ''' SELECT * FROM logs WHERE gid = (%s) ORDER by mid ''', (gid, ))
             print("Printing all logs from group %s (%s)" % (gtitle, gid))
             for i in self.__cursor.fetchall():
                 print(i)
