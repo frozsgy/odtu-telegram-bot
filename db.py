@@ -3,7 +3,7 @@ import os
 import datetime
 
 
-class DB():
+class DB:
     """Class for handling database methods. 
 
     Attributes:

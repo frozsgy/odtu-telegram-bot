@@ -1,4 +1,4 @@
-class TurkishText():
+class TurkishText:
     """Class for handling lowercase/uppercase conversions of Turkish characters..
 
     Attributes:
@@ -6,8 +6,8 @@ class TurkishText():
     """
 
     text = ""
-    l = ['ı', 'ğ', 'ü', 'ş', 'i', 'ö', 'ç']
-    u = ['I', 'Ğ', 'Ü', 'Ş', 'İ', 'Ö', 'Ç']
+    lowercase = ['ı', 'ğ', 'ü', 'ş', 'i', 'ö', 'ç']
+    uppercase = ['I', 'Ğ', 'Ü', 'Ş', 'İ', 'Ö', 'Ç']
 
     def __init__(self, text):
         self.text = text
@@ -18,8 +18,8 @@ class TurkishText():
         """
         res = ""
         for i in self.text:
-            if i in self.l:
-                res += self.u[self.l.index(i)]
+            if i in self.lowercase:
+                res += self.uppercase[self.lowercase.index(i)]
             else:
                 res += i.upper()
         return res
@@ -30,8 +30,8 @@ class TurkishText():
         """
         res = ""
         for i in self.text:
-            if i in self.u:
-                res += self.l[self.u.index(i)]
+            if i in self.uppercase:
+                res += self.lowercase[self.uppercase.index(i)]
             else:
                 res += i.lower()
         return res
