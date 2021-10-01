@@ -1,10 +1,10 @@
 CREATE TABLE IF NOT EXISTS settings (id SERIAL PRIMARY KEY, data varchar);
 CREATE TABLE IF NOT EXISTS people (uid varchar NOT NULL UNIQUE , fname text, lname text, uname text);
 CREATE TABLE IF NOT EXISTS groups (gid varchar NOT NULL UNIQUE, title text);
-CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL, time date, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid));
+CREATE TABLE IF NOT EXISTS logs (uid varchar, mid varchar NOT NULL, time varchar, content text, gid varchar, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(gid) REFERENCES groups(gid));
 CREATE TABLE IF NOT EXISTS services (id INTEGER PRIMARY KEY, name varchar);
 CREATE TABLE IF NOT EXISTS subscriptions (uid varchar NOT NULL, service INTEGER, FOREIGN KEY(uid) REFERENCES people(uid), FOREIGN KEY(service) REFERENCES services(id));
-CREATE TABLE IF NOT EXISTS servicedays (id INTEGER, day date, FOREIGN KEY(id) REFERENCES services(id));
+CREATE TABLE IF NOT EXISTS servicedays (id INTEGER, day varchar, FOREIGN KEY(id) REFERENCES services(id));
 INSERT into groups (gid, title) VALUES(0, 'private');
 INSERT into settings (data) VALUES(0);
 INSERT into settings (data) VALUES('YOUR-TELEGRAM-BOT-TOKEN');
