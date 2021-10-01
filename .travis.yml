@@ -9,4 +9,4 @@ install:
   - pip install yapf
 
 script:
-  - yapf --style=yapf --diff --recursive .
+  - yapf --style=pep8 --diff --recursive .

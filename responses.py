@@ -36,7 +36,8 @@ class Responses:
                         "haftaiçi her gün, sabah 9'da güncel yemek menüsünü özel mesaj olarak gönderiyorum." \
                         "\n\nGözüne çarpan hataları ya da botta olmasını istediğin özellikleri @frozsgy'e " \
                         "iletebilirsin.\n\nUmarım beni seversin :) "
-        self.__commands['/help'] = "Help will arrive for the ones who really need."
+        self.__commands[
+            '/help'] = "Help will arrive for the ones who really need."
 
     def respond(self, message):
         """Processes the message and adds the response (if exists) to the response list.
@@ -102,9 +103,11 @@ class Responses:
         now = datetime.datetime.now()
 
         date_search = re.search(
-            r"(0{0,1}[1-9]|[12][0-9]|3[01])[- /.](0{0,1}[1-9]|1[012])[- /.](19|20)\d\d", date)
+            r"(0{0,1}[1-9]|[12][0-9]|3[01])[- /.](0{0,1}[1-9]|1[012])[- /.](19|20)\d\d",
+            date)
         if date_search:
-            date_match = re.search(r"(\d{1,2})(.*?)(\d{1,2})(.*?)(\d{4})", date)
+            date_match = re.search(r"(\d{1,2})(.*?)(\d{1,2})(.*?)(\d{4})",
+                                   date)
             dates = date_match.groups()
             iday = '-'.join(dates[::2])
         else:
@@ -130,7 +133,9 @@ class Responses:
             elif date == 'tomorrow':
                 menu_response = ["🍴 Yarın yemekhanede şunlar varmış hocam:"]
             else:
-                menu_response = ["🍴 %s tarihinde yemekhanede şunlar varmış hocam:" % date]
+                menu_response = [
+                    "🍴 %s tarihinde yemekhanede şunlar varmış hocam:" % date
+                ]
             menu_response.append("")
             menu_response.append("*Öğle Yemeği*")
             for j in range(4):
