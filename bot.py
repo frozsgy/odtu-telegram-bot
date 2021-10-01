@@ -7,7 +7,7 @@ import json
 import datetime
 
 
-class Bot():
+class Bot:
     """Class for handling all communication with the Telegram API. 
 
     Attributes:
@@ -54,8 +54,8 @@ class Bot():
                     # TODO
                     pass
             if len(res) > 0:
-                newOffset = res[-1]['update_id']
-                self.__db.update_offset(newOffset)
+                new_offset = res[-1]['update_id']
+                self.__db.update_offset(new_offset)
             return True
         else:
             return False
@@ -116,15 +116,15 @@ class Bot():
         """Parses inline messages for inline bot functions.
         """
         inline = body['inline_query']
-        messageFrom = inline['from']
-        messageFromFirstName = messageFrom.get('first_name', '')
-        messageFromLastName = messageFrom.get('last_name', '')
-        messageFromUserName = messageFrom.get('username', '')
-        messageFromLanguageCode = messageFrom.get('language_code', 'TR')
-        messageFromID = messageFrom['id']
-        messageFromIsBot = messageFrom['is_bot']
-        inlineID = inline['id']
-        inlineQuery = inline['query']
+        message_from = inline['from']
+        message_from_first_name = message_from.get('first_name', '')
+        message_from_last_name = message_from.get('last_name', '')
+        message_from_user_name = message_from.get('username', '')
+        message_from_language_code = message_from.get('language_code', 'TR')
+        message_from_id = message_from['id']
+        message_from_is_bot = message_from['is_bot']
+        inline_id = inline['id']
+        inline_query = inline['query']
 
         # TODO
         print("Inline")
@@ -168,9 +168,9 @@ class Bot():
         """
         now = datetime.datetime.now()
         clock = (now.hour, now.minute)
-        weekdayMorning = {1: self.__r.food}
+        weekday_morning = {1: self.__r.food}
         if now.weekday() < 5 and clock == (9, 0):
-            for key, val in weekdayMorning.items():
+            for key, val in weekday_morning.items():
                 if self.__db.check_if_service_sent_today(key) is False:
                     users = self.__db.get_service_users(key)
                     for i in users:

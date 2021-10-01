@@ -16,12 +16,12 @@ b = Bot(verbose, logging)
 
 
 def run_bot(verbose=False, logging=False):
-    starttime = time.time()
+    start_time = time.time()
     while True:
         try:
             b.get_updates()
             b.send_service_messages()
-            time.sleep(1.0 - ((time.time() - starttime) % 1.0))
+            time.sleep(1.0 - ((time.time() - start_time) % 1.0))
         except requests.exceptions.ConnectionError as e:
             if verbose is True:
                 print("Connection error: ", e)

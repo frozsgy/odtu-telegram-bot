@@ -1,6 +1,4 @@
-
 class TelegramMessage:
-
     has_text = False
     has_attachment = False
     text = ""
@@ -58,7 +56,10 @@ class TelegramMessage:
 
     def generate_log_text(self):
         log_text = "Message from: %s %s (%s) - %s - %s - ID: %s" % (self.message_from_first_name,
-                                                                    self.message_from_last_name, self.message_from_user_name, self.chat_date, self.content, self.message_id)
+                                                                    self.message_from_last_name,
+                                                                    self.message_from_user_name,
+                                                                    self.chat_date, self.content,
+                                                                    self.message_id)
         if self.chat_type != 'private':
             log_text += " - Group: " + self.chat_title
         return log_text
@@ -66,4 +67,5 @@ class TelegramMessage:
     def generate_log_tuple(self):
         log_chat_id = 0 if self.chat_type == 'private' else self.chat_id
         log_chat_title = 'private' if self.chat_type == 'private' else self.chat_title
-        return (self.message_from_id, self.message_from_first_name, self.message_from_last_name, self.message_from_user_name, self.message_id, self.chat_date, self.content, log_chat_id, log_chat_title)
+        return self.message_from_id, self.message_from_first_name, self.message_from_last_name, \
+               self.message_from_user_name, self.message_id, self.chat_date, self.content, log_chat_id, log_chat_title
