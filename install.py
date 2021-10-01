@@ -7,4 +7,6 @@ try:
     db.create_db(secret)
     print("Installation has been completed.\n")
 except:
-    print("Installation failed. Please check if you have the necessary file permissions.")
+    print(
+        "Installation failed. Please check if you have the necessary file permissions."
+    )

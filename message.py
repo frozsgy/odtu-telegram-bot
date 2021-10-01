@@ -28,7 +28,8 @@ class TelegramMessage:
         self.message_from_first_name = message_from.get('first_name', '')
         self.message_from_last_name = message_from.get('last_name', '')
         self.message_from_user_name = message_from.get('username', '')
-        self.message_from_language_code = message_from.get('language_code', 'TR')
+        self.message_from_language_code = message_from.get(
+            'language_code', 'TR')
 
         if 'text' in message:
             self.text = message['text']
@@ -55,11 +56,10 @@ class TelegramMessage:
             self.content += content_title
 
     def generate_log_text(self):
-        log_text = "Message from: %s %s (%s) - %s - %s - ID: %s" % (self.message_from_first_name,
-                                                                    self.message_from_last_name,
-                                                                    self.message_from_user_name,
-                                                                    self.chat_date, self.content,
-                                                                    self.message_id)
+        log_text = "Message from: %s %s (%s) - %s - %s - ID: %s" % (
+            self.message_from_first_name, self.message_from_last_name,
+            self.message_from_user_name, self.chat_date, self.content,
+            self.message_id)
         if self.chat_type != 'private':
             log_text += " - Group: " + self.chat_title
         return log_text

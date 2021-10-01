@@ -36,10 +36,12 @@ class Bot:
         """
         url = self.__url + "/getUpdates"
         offset = self.__db.get_offset()
-        params = {'offset': int(offset) + 1,
-                  'limit': 100,
-                  'timeout': 0,
-                  'allowed_updates': ['message']}
+        params = {
+            'offset': int(offset) + 1,
+            'limit': 100,
+            'timeout': 0,
+            'allowed_updates': ['message']
+        }
         r = requests.post(url, params)
         page = r.content
         items = json.loads(page)
@@ -104,11 +106,14 @@ class Bot:
                 if self.__db.check_service(tm.message_from_id, 1) is True:
                     self.__db.remove_service(tm.message_from_id, 1)
                     self.send_message(
-                        tm.chat_id, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', tm.message_id)
+                        tm.chat_id,
+                        'Yemekhane servisi aboneliğiniz sonlandırıldı.',
+                        tm.message_id)
                 else:
                     self.__db.add_service(tm.message_from_id, 1)
-                    self.send_message(
-                        tm.chat_id, 'Yemekhane servisine abone oldunuz.', tm.message_id)
+                    self.send_message(tm.chat_id,
+                                      'Yemekhane servisine abone oldunuz.',
+                                      tm.message_id)
             else:
                 self.send_message(tm.chat_id, m, tm.message_id)
 
@@ -132,8 +137,7 @@ class Bot:
     def send_inline_response(self, inline_query_id, results):
         # TODO
         url = self.__url + "/answerInlineQuery"
-        params = {'inline_query_id': inline_query_id,
-                  'results': []}
+        params = {'inline_query_id': inline_query_id, 'results': []}
         r = requests.post(url, params)
         page = r.content
         items = json.loads(page)
@@ -150,9 +154,11 @@ class Bot:
         Returns boolean.
         """
         url = self.__url + "/sendMessage"
-        params = {'chat_id': chat_id,
-                  'text': message,
-                  'parse_mode': 'Markdown'}
+        params = {
+            'chat_id': chat_id,
+            'text': message,
+            'parse_mode': 'Markdown'
+        }
         if reply != 0:
             params['reply_to_message_id'] = reply
         r = requests.post(url, params)
