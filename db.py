@@ -52,7 +52,8 @@ class DB:
         res = True
         try:
             self.__cursor.execute(
-                ''' UPDATE settings SET data = (%s) WHERE id = 1 ''', (offset, ))
+                ''' UPDATE settings SET data = (%s) WHERE id = 1 ''',
+                (offset, ))
             if self.__verbose:
                 print("Offset updated with %s" % offset)
         except:
@@ -124,8 +125,8 @@ class DB:
             return res
         else:
             try:
-                self.__cursor.execute(''' INSERT into groups VALUES((%s),(%s)) ''',
-                                      (gid, title))
+                self.__cursor.execute(
+                    ''' INSERT into groups VALUES((%s),(%s)) ''', (gid, title))
                 if self.__verbose:
                     print("Group %s (%s) created succesfully" % (title, gid))
             except:
@@ -154,8 +155,9 @@ class DB:
             self.add_group(gid, gtitle)
         res = True
         try:
-            self.__cursor.execute(''' INSERT into logs VALUES((%s),(%s),(%s),(%s),(%s)) ''',
-                                  (uid, mid, time, content, gid))
+            self.__cursor.execute(
+                ''' INSERT into logs VALUES((%s),(%s),(%s),(%s),(%s)) ''',
+                (uid, mid, time, content, gid))
             if self.__verbose:
                 print("Message %s logged succesfully" % (mid))
         except:
@@ -201,7 +203,8 @@ class DB:
             return res
         try:
             self.__cursor.execute(
-                ''' INSERT into subscriptions VALUES((%s),(%s)) ''', (uid, service))
+                ''' INSERT into subscriptions VALUES((%s),(%s)) ''',
+                (uid, service))
             if self.__verbose:
                 print("User %s subscribed to %s service succesfully" %
                       (uid, self.get_service_title(service)))
@@ -263,8 +266,9 @@ class DB:
         today = str(now.year) + str(now.month) + str(now.day)
         res = True
         try:
-            self.__cursor.execute(''' INSERT into servicedays VALUES((%s),(%s)) ''',
-                                  (service, today))
+            self.__cursor.execute(
+                ''' INSERT into servicedays VALUES((%s),(%s)) ''',
+                (service, today))
             if self.__verbose:
                 print("Service days for %s updated as sent" %
                       self.get_service_title(service))
@@ -289,8 +293,8 @@ class DB:
         """Fetches the user details with the given user id from the database.
         """
         if self.check_if_user_exists(uid):
-            self.__cursor.execute(''' SELECT * from people WHERE uid = (%s) ''',
-                                  (uid, ))
+            self.__cursor.execute(
+                ''' SELECT * from people WHERE uid = (%s) ''', (uid, ))
             return self.__cursor.fetchone()
         else:
             return False
@@ -299,7 +303,8 @@ class DB:
         """Fetches the user ids subscribed to the given service from the database.
         """
         self.__cursor.execute(
-            ''' SELECT * from subscriptions WHERE service = (%s) ''', (service, ))
+            ''' SELECT * from subscriptions WHERE service = (%s) ''',
+            (service, ))
         return self.__cursor.fetchall()
 
     def list_logs(self):
@@ -316,7 +321,8 @@ class DB:
         if self.check_if_user_exists(uid):
             user = self.get_user(uid)
             self.__cursor.execute(
-                ''' SELECT * FROM logs WHERE uid = (%s) ORDER by mid ''', (uid, ))
+                ''' SELECT * FROM logs WHERE uid = (%s) ORDER by mid ''',
+                (uid, ))
             print("Printing all logs from user %s %s (%s)" %
                   (user[1], user[2], user[3]))
             for i in self.__cursor.fetchall():
@@ -340,7 +346,8 @@ class DB:
         if self.check_if_group_exists(gid):
             gtitle = self.get_group_title(gid)
             self.__cursor.execute(
-                ''' SELECT * FROM logs WHERE gid = (%s) ORDER by mid ''', (gid, ))
+                ''' SELECT * FROM logs WHERE gid = (%s) ORDER by mid ''',
+                (gid, ))
             print("Printing all logs from group %s (%s)" % (gtitle, gid))
             for i in self.__cursor.fetchall():
                 print(i)
