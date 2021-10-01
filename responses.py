@@ -109,7 +109,7 @@ class Responses:
             date_match = re.search(r"(\d{1,2})(.*?)(\d{1,2})(.*?)(\d{4})",
                                    date)
             dates = date_match.groups()
-            iday = '-'.join(dates[::2])
+            iday = '/'.join(dates[::2])
         else:
             if date == 'tomorrow':
                 now += datetime.timedelta(days=1)
