@@ -127,17 +127,31 @@ class Responses:
             daily_menu = data['data']
 
             matches = re.finditer(regex, daily_menu, re.MULTILINE)
+            match_count = 0
             for matchNum, match in enumerate(matches, start=1):
                 for groupNum in range(0, len(match.groups())):
                     groupNum += 1
-                    daily[0].append(
-                        TurkishText(match.group(groupNum)).capitalize())
+                    if match_count < 4:
+                        daily[0].append(
+                            TurkishText(match.group(groupNum)).capitalize())
+                    else:
+                        daily[1].append(
+                            TurkishText(match.group(groupNum)).capitalize())
+                    match_count += 1
+
+            match_count = 0
             matches = re.finditer(veggie_regex, daily_menu, re.MULTILINE)
             for matchNum, match in enumerate(matches, start=1):
                 for groupNum in range(0, len(match.groups())):
                     groupNum += 1
-                    daily[0].append(
-                        TurkishText(match.group(groupNum)).capitalize())
+                    if match_count < 1:
+                        daily[0].append(
+                            TurkishText(match.group(groupNum)).capitalize())
+                    else:
+                        daily[1].append(
+                            TurkishText(match.group(groupNum)).capitalize())
+                    match_count += 1
+
         if daily != [[], []]:
             if date == 'today':
                 menu_response = ["🍴 Bugün yemekhanede şunlar varmış hocam:"]
@@ -153,11 +167,20 @@ class Responses:
                 if daily[0][j] != '*':
                     menu_response.append("· " + daily[0][j])
             menu_response.append("")
+            if daily[1][0] != "*":
+                menu_response.append("*Akşam Yemeği*")
+                for j in range(4):
+                    menu_response.append("· " + daily[1][j])
+                menu_response.append("")
             if daily[0][4] != '':
                 menu_response.append("🥬 Vejetaryen alternatifler:")
                 menu_response.append("")
                 menu_response.append("*Öğle Yemeği*")
                 menu_response.append("· " + daily[0][4])
+                menu_response.append("")
+            if daily[1][0] != "*":
+                menu_response.append("*Akşam Yemeği*")
+                menu_response.append("· " + daily[1][4])
                 menu_response.append("")
             menu_response.append("Afiyet olsun!")
             return '\n'.join(menu_response)
