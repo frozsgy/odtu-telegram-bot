@@ -31,7 +31,7 @@ class Responses:
         self.__commands[
             '/start'] = "Merhaba! Ben ODTÜ Bot. \n\nGüncel yemekhane menüsünü öğrenmek için `/yemekhane` " \
                         "yazabilirsin. `/yemekhane yarın` komutu ile yarının menüsünü de öğrenebilirsin. Belirli bir " \
-                        "tarihin yemekhane menüsünü görmek için `/yemekhane (GG-AA-YYYY)` formatını " \
+                        "tarihin yemekhane menüsünü görmek için `/yemekhane GG-AA-YYYY` formatını " \
                         "kullanabilirsin.\n\n`/menu` komutu ile yemekhane servisine abone olabilirsin. Bu servis ile " \
                         "haftaiçi her gün, sabah 9'da güncel yemek menüsünü özel mesaj olarak gönderiyorum." \
                         "\n\nGözüne çarpan hataları ya da botta olmasını istediğin özellikleri @frozsgy'e " \
@@ -161,24 +161,27 @@ class Responses:
                 menu_response = [
                     "🍴 %s tarihinde yemekhanede şunlar varmış hocam:" % date
                 ]
-            menu_response.append("")
-            menu_response.append("*Öğle Yemeği*")
-            for j in range(4):
-                if daily[0][j] != '*':
-                    menu_response.append("· " + daily[0][j])
-            menu_response.append("")
-            if daily[1][0] != "*":
-                menu_response.append("*Akşam Yemeği*")
-                for j in range(4):
-                    menu_response.append("· " + daily[1][j])
+            if len(daily[0]) > 3:
                 menu_response.append("")
-            if daily[0][4] != '':
+                menu_response.append("*Öğle Yemeği*")
+                for j in range(4):
+                    if daily[0][j] != '*':
+                        menu_response.append("· " + daily[0][j])
+                menu_response.append("")
+            if len(daily[1]) > 3:
+                if daily[1][0] != "*":
+                    menu_response.append("*Akşam Yemeği*")
+                    for j in range(4):
+                        menu_response.append("· " + daily[1][j])
+                    menu_response.append("")
+            if len(daily[0]) > 4 or len(daily[1]) > 4:
                 menu_response.append("🥬 Vejetaryen alternatifler:")
                 menu_response.append("")
+            if len(daily[0]) > 4 and daily[0][4] != '':
                 menu_response.append("*Öğle Yemeği*")
                 menu_response.append("· " + daily[0][4])
                 menu_response.append("")
-            if daily[1][0] != "*":
+            if len(daily[1]) > 4 and daily[1][0] != "*":
                 menu_response.append("*Akşam Yemeği*")
                 menu_response.append("· " + daily[1][4])
                 menu_response.append("")
