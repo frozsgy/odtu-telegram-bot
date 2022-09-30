@@ -68,10 +68,7 @@ class DB:
         """
         self.__cursor.execute(''' SELECT COUNT(*) from people WHERE uid = (%s) ''', (uid,))
         status = self.__cursor.fetchone()[0]
-        if status == 1:
-            return True
-        else:
-            return False
+        return status == 1
 
     def add_user(self, uid, fname, lname, uname):
         """Adds a user with the given id, first name, last name, and username to the database.
@@ -100,10 +97,7 @@ class DB:
         """
         self.__cursor.execute(''' SELECT COUNT(*) from groups WHERE gid = (%s) ''', (gid,))
         status = self.__cursor.fetchone()[0]
-        if status == 1:
-            return True
-        else:
-            return False
+        return status == 1
 
     def add_group(self, gid, title):
         """Adds a group with the given id, and title to the database.
@@ -124,16 +118,7 @@ class DB:
                 self.__conn.commit()
                 return res
 
-    def log(self,
-            uid,
-            fname,
-            lname,
-            uname,
-            mid,
-            time,
-            content,
-            gid,
-            gtitle='private'):
+    def log(self, uid, fname, lname, uname, mid, time, content, gid, gtitle='private'):
         """Logs the activity to the database.
         Returns boolean.
         """
@@ -168,10 +153,7 @@ class DB:
         self.__cursor.execute(''' SELECT COUNT(*) from subscriptions WHERE uid = (%s) and service = (%s)''',
                               (uid, service))
         status = self.__cursor.fetchone()[0]
-        if status == 1:
-            return True
-        else:
-            return False
+        return status == 1
 
     def add_service(self, uid, service):
         """Adds a service subscription to the database.
@@ -217,10 +199,7 @@ class DB:
         today = str(now.year) + str(now.month) + str(now.day)
         self.__cursor.execute(''' SELECT COUNT(*) from servicedays WHERE id = (%s) and day = (%s) ''', (service, today))
         status = self.__cursor.fetchone()[0]
-        if status == 1:
-            return True
-        else:
-            return False
+        return status == 1
 
     def mark_service_sent_today(self, service):
         """Updates a service blast as sent today.
