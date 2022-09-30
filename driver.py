@@ -1,4 +1,3 @@
-import logging
 import sys
 import time
 
@@ -13,7 +12,7 @@ for i in sys.argv:
     if i in ('--log', '-L'):
         logging_enabled = True
 
-b = Bot(is_verbose, logging_enabled)
+b = Bot(logging_enabled)
 
 
 def run_bot(verbose=False):

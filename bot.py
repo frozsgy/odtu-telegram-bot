@@ -1,10 +1,12 @@
-from responses import Responses
-from db import DB
-from message import TelegramMessage
+import datetime
+import json
+import logging
 
 import requests
-import json
-import datetime
+
+from db import DB
+from message import TelegramMessage
+from responses import Responses
 
 
 class Bot:
@@ -17,18 +19,17 @@ class Bot:
     # https://api.telegram.org/bot<token>/METHOD_NAME
     __url = "https://api.telegram.org/bot"
 
-    def __init__(self, verbose=False, logging=False):
-        self.__db = DB(verbose)
+    def __init__(self, logging_enabled=False):
+        self.__db = DB()
         self.__token = self.__db.get_token()
         self.__url += self.__token
         self.__r = Responses()
-        self.__verbose = verbose
-        self.__logging = logging
+        self.__logging = logging_enabled
 
     def hello(self):
         """Tester method to check if the bot class works properly.
         """
-        print("Hello, I am running nicely.")
+        logging.info("Hello, I am running nicely.")
 
     def get_updates(self):
         """Gets updates from the Telegram Server. Uses Long Polling.
@@ -76,7 +77,7 @@ class Bot:
             file_path = res['file_path']
             url = "https://api.telegram.org/file/bot" + self.__token + "/" + file_path
             # TODO - to handle file processing
-            # print(url + file_path)
+            # logging.info(url + file_path)
             return True
         else:
             return False
@@ -89,8 +90,7 @@ class Bot:
         responses = self.__r.respond(tm.text) if tm.has_text else []
         log_text = tm.generate_log_text()
 
-        if self.__verbose is True:
-            print(log_text)
+        logging.debug(log_text)
         if self.__logging is True:
             self.__db.log(*tm.generate_log_tuple())
             # TODO
@@ -105,15 +105,10 @@ class Bot:
             if m == ('service', 1):
                 if self.__db.check_service(tm.message_from_id, 1) is True:
                     self.__db.remove_service(tm.message_from_id, 1)
-                    self.send_message(
-                        tm.chat_id,
-                        'Yemekhane servisi aboneliğiniz sonlandırıldı.',
-                        tm.message_id)
+                    self.send_message(tm.chat_id, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', tm.message_id)
                 else:
                     self.__db.add_service(tm.message_from_id, 1)
-                    self.send_message(tm.chat_id,
-                                      'Yemekhane servisine abone oldunuz.',
-                                      tm.message_id)
+                    self.send_message(tm.chat_id, 'Yemekhane servisine abone oldunuz.', tm.message_id)
             else:
                 self.send_message(tm.chat_id, m, tm.message_id)
 
@@ -132,7 +127,7 @@ class Bot:
         inline_query = inline['query']
 
         # TODO
-        print("Inline")
+        logging.debug("Inline")
 
     def send_inline_response(self, inline_query_id, results):
         # TODO
@@ -141,7 +136,7 @@ class Bot:
         r = requests.post(url, params)
         page = r.content
         items = json.loads(page)
-        if items['ok'] == True:
+        if items['ok']:
             return True
         else:
             return False
@@ -164,7 +159,7 @@ class Bot:
         r = requests.post(url, params)
         page = r.content
         items = json.loads(page)
-        if items['ok'] == True:
+        if items['ok']:
             return True
         else:
             return False

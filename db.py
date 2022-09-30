@@ -15,7 +15,7 @@ class DB:
 
     __verbose = False
 
-    def __init__(self, verbose=False):
+    def __init__(self):
         self.__conn = psycopg2.connect(
             database=os.environ['POSTGRES_DB'],
             user=os.environ['POSTGRES_USER'],
@@ -24,7 +24,6 @@ class DB:
             port="5432",
         )
         self.__cursor = self.__conn.cursor()
-        self.__verbose = verbose
 
     def __del__(self):
         self.__cursor.close()
