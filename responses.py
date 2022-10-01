@@ -1,7 +1,7 @@
-import re
-import requests
-import json
 import datetime
+import re
+
+import requests
 
 from turkish import TurkishText
 
