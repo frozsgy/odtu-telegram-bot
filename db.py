@@ -81,8 +81,7 @@ class DB:
             try:
                 self.__cursor.execute(''' INSERT into people VALUES((%s),(%s),(%s),(%s)) ''',
                                       (uid, fname, lname, uname))
-                logger.debug("User %s %s (%s) created successfully" %
-                             (fname, lname, uname))
+                logger.debug("User %s %s (%s) created successfully" % (fname, lname, uname))
             except:
                 res = False
                 logger.warning("User %s %s (%s) cannot be inserted" % (fname, lname, uname))
@@ -164,8 +163,7 @@ class DB:
             return res
         try:
             self.__cursor.execute(''' INSERT into subscriptions VALUES((%s),(%s)) ''', (uid, service))
-            logger.debug(
-                "User %s subscribed to %s service successfully" % (uid, self.get_service_title(service)))
+            logger.debug("User %s subscribed to %s service successfully" % (uid, self.get_service_title(service)))
         except:
             res = False
             logger.warning("User %s cannot subscribe to %s service" % (uid, self.get_service_title(service)))
@@ -184,8 +182,7 @@ class DB:
         try:
             self.__cursor.execute(''' DELETE from subscriptions WHERE uid = (%s) and service = (%s) ''', (uid, service))
             res = True
-            logger.debug(
-                "User %s unsubscribed from %s service successfully" % (uid, self.get_service_title(service)))
+            logger.debug("User %s unsubscribed from %s service successfully" % (uid, self.get_service_title(service)))
         except:
             logger.warning("User %s cannot unsubscribe to %s service" % (uid, self.get_service_title(service)))
         finally:
