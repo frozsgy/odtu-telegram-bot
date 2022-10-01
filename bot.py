@@ -85,20 +85,20 @@ class Bot:
     def parse_message(self, body):
         """Generates a TelegramMessage object from the message.
         """
-        tm = TelegramMessage(body.get('message'))
-        responses = self.__r.respond(tm.text) if tm.has_text else []
-        log_text = tm.generate_log_text()
+        user_message = TelegramMessage(body.get('message'))
+        responses = self.__r.respond(user_message.text) if user_message.has_text else []
+        log_text = user_message.generate_log_text()
 
         logger.debug(log_text)
         if self.__logging is True:
-            self.__db.log(*tm.generate_log_tuple())
+            self.__db.log(*user_message.generate_log_tuple())
 
-        sent_message = self.respond_to_message(tm, responses)
+        sent_message = self.respond_to_message(user_message, responses)
 
         if self.__logging is True:
             for m in sent_message:
-                mm = TelegramMessage(m)
-                self.__db.log(*mm.generate_log_tuple())
+                bot_response = TelegramMessage(m)
+                self.__db.log(*bot_response.generate_log_tuple())
 
     def respond_to_message(self, tm, responses):
         """Sends responses to the messages.
