@@ -1,10 +1,10 @@
 import datetime
 import json
-import logging
 
 import requests
 
 from db import DB
+from logger import logger
 from message import TelegramMessage
 from responses import Responses
 
@@ -29,7 +29,7 @@ class Bot:
     def hello(self):
         """Tester method to check if the bot class works properly.
         """
-        logging.info("Hello, I am running nicely.")
+        logger.info("Hello, I am running nicely.")
 
     def get_updates(self):
         """Gets updates from the Telegram Server. Uses Long Polling.
@@ -77,7 +77,7 @@ class Bot:
             file_path = res['file_path']
             url = "https://api.telegram.org/file/bot" + self.__token + "/" + file_path
             # TODO - to handle file processing
-            # logging.info(url + file_path)
+            # logger.info(url + file_path)
             return True
         else:
             return False
@@ -90,7 +90,7 @@ class Bot:
         responses = self.__r.respond(tm.text) if tm.has_text else []
         log_text = tm.generate_log_text()
 
-        logging.debug(log_text)
+        logger.debug(log_text)
         if self.__logging is True:
             self.__db.log(*tm.generate_log_tuple())
             # TODO
@@ -127,7 +127,7 @@ class Bot:
         inline_query = inline['query']
 
         # TODO
-        logging.debug("Inline")
+        logger.debug("Inline")
 
     def send_inline_response(self, inline_query_id, results):
         # TODO

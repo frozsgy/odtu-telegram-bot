@@ -1,8 +1,9 @@
 import datetime
-import logging
 import os
 
 import psycopg2
+
+from logger import logger
 
 
 class DB:
@@ -33,11 +34,10 @@ class DB:
         """Fetches the Telegram Bot API Token from the database.
         """
         try:
-            self.__cursor.execute(
-                ''' SELECT data from settings WHERE id = 2 ''')
+            self.__cursor.execute(''' SELECT data from settings WHERE id = 2 ''')
             return self.__cursor.fetchone()[0]
         except:
-            logging.critical("Telegram Bot Secret is not in the database")
+            logger.critical("Telegram Bot Secret is not in the database")
             exit()
 
     def get_offset(self):
@@ -53,10 +53,10 @@ class DB:
         res = True
         try:
             self.__cursor.execute(''' UPDATE settings SET data = (%s) WHERE id = 1 ''', (offset,))
-            logging.debug("Offset updated with %s" % offset)
+            logger.debug("Offset updated with %s" % offset)
         except:
             res = False
-            logging.warning("Offset could not be updated")
+            logger.warning("Offset could not be updated")
         finally:
             self.__conn.commit()
             return res
@@ -75,17 +75,17 @@ class DB:
         """
         res = True
         if self.check_if_user_exists(uid):
-            logging.debug("User %s %s (%s) exists in the database" % (fname, lname, uname))
+            logger.debug("User %s %s (%s) exists in the database" % (fname, lname, uname))
             return res
         else:
             try:
                 self.__cursor.execute(''' INSERT into people VALUES((%s),(%s),(%s),(%s)) ''',
                                       (uid, fname, lname, uname))
-                logging.debug("User %s %s (%s) created successfully" %
-                              (fname, lname, uname))
+                logger.debug("User %s %s (%s) created successfully" %
+                             (fname, lname, uname))
             except:
                 res = False
-                logging.warning("User %s %s (%s) cannot be inserted" % (fname, lname, uname))
+                logger.warning("User %s %s (%s) cannot be inserted" % (fname, lname, uname))
             finally:
                 self.__conn.commit()
                 return res
@@ -104,15 +104,15 @@ class DB:
         """
         res = True
         if self.check_if_group_exists(gid):
-            logging.debug("Group %s (%s) exists in the database" % (title, gid))
+            logger.debug("Group %s (%s) exists in the database" % (title, gid))
             return res
         else:
             try:
                 self.__cursor.execute(''' INSERT into groups VALUES((%s),(%s)) ''', (gid, title))
-                logging.debug("Group %s (%s) created successfully" % (title, gid))
+                logger.debug("Group %s (%s) created successfully" % (title, gid))
             except:
                 res = False
-                logging.warning("Group %s (%s) cannot be inserted" % (title, gid))
+                logger.warning("Group %s (%s) cannot be inserted" % (title, gid))
             finally:
                 self.__conn.commit()
                 return res
@@ -128,10 +128,10 @@ class DB:
         try:
             self.__cursor.execute(''' INSERT into logs VALUES((%s),(%s),(%s),(%s),(%s)) ''',
                                   (uid, mid, time, content, gid))
-            logging.debug("Message %s logged successfully" % (mid))
+            logger.debug("Message %s logged successfully" % (mid))
         except:
             res = False
-            logging.warning("Message %s cannot be logged" % (mid))
+            logger.warning("Message %s cannot be logged" % (mid))
         finally:
             self.__conn.commit()
             return res
@@ -160,14 +160,15 @@ class DB:
         """
         res = True
         if self.check_service(uid, service) is True:
-            logging.debug("User %s already subscribed to service %s" % (uid, self.get_service_title(service)))
+            logger.debug("User %s already subscribed to service %s" % (uid, self.get_service_title(service)))
             return res
         try:
             self.__cursor.execute(''' INSERT into subscriptions VALUES((%s),(%s)) ''', (uid, service))
-            logging.debug("User %s subscribed to %s service successfully" % (uid, self.get_service_title(service)))
+            logger.debug(
+                "User %s subscribed to %s service successfully" % (uid, self.get_service_title(service)))
         except:
             res = False
-            logging.warning("User %s cannot subscribe to %s service" % (uid, self.get_service_title(service)))
+            logger.warning("User %s cannot subscribe to %s service" % (uid, self.get_service_title(service)))
         finally:
             self.__conn.commit()
             return res
@@ -178,14 +179,15 @@ class DB:
         """
         res = False
         if self.check_service(uid, service) is False:
-            logging.debug("User %s has not subscribed to service %s" % (uid, self.get_service_title(service)))
+            logger.debug("User %s has not subscribed to service %s" % (uid, self.get_service_title(service)))
             return res
         try:
             self.__cursor.execute(''' DELETE from subscriptions WHERE uid = (%s) and service = (%s) ''', (uid, service))
             res = True
-            logging.debug("User %s unsubscribed from %s service successfully" % (uid, self.get_service_title(service)))
+            logger.debug(
+                "User %s unsubscribed from %s service successfully" % (uid, self.get_service_title(service)))
         except:
-            logging.warning("User %s cannot unsubscribe to %s service" % (uid, self.get_service_title(service)))
+            logger.warning("User %s cannot unsubscribe to %s service" % (uid, self.get_service_title(service)))
         finally:
             self.__conn.commit()
             return res
@@ -209,10 +211,10 @@ class DB:
         res = True
         try:
             self.__cursor.execute(''' INSERT into servicedays VALUES((%s),(%s)) ''', (service, today))
-            logging.debug("Service days for %s updated as sent" % self.get_service_title(service))
+            logger.debug("Service days for %s updated as sent" % self.get_service_title(service))
         except:
             res = False
-            logging.warning("Service days could not be updated")
+            logger.warning("Service days could not be updated")
         finally:
             self.__conn.commit()
             return res
@@ -245,9 +247,9 @@ class DB:
         """Prints all logs from the database.
         """
         self.__cursor.execute(''' SELECT * FROM logs ORDER by mid ''')
-        logging.debug("Printing all logs")
+        logger.debug("Printing all logs")
         for i in self.__cursor.fetchall():
-            logging.debug(i)
+            logger.debug(i)
 
     def list_logs_from_user(self, uid):
         """Prints all logs with the given user id from the database.
@@ -255,19 +257,19 @@ class DB:
         if self.check_if_user_exists(uid):
             user = self.get_user(uid)
             self.__cursor.execute(''' SELECT * FROM logs WHERE uid = (%s) ORDER by mid ''', (uid,))
-            logging.debug("Printing all logs from user %s %s (%s)" % (user[1], user[2], user[3]))
+            logger.debug("Printing all logs from user %s %s (%s)" % (user[1], user[2], user[3]))
             for i in self.__cursor.fetchall():
-                logging.debug(i)
+                logger.debug(i)
         else:
-            logging.debug("No user exists with User ID %s" % uid)
+            logger.debug("No user exists with User ID %s" % uid)
 
     def list_logs_with_user(self):
         """Prints all logs and the user details as a joined table from the database.
         """
         self.__cursor.execute(''' SELECT * FROM logs INNER JOIN people ON logs.uid = people.uid ORDER by mid ''')
-        logging.debug("Printing all logs with user data")
+        logger.debug("Printing all logs with user data")
         for i in self.__cursor.fetchall():
-            logging.debug(i)
+            logger.debug(i)
 
     def list_logs_from_group(self, gid):
         """Prints all logs with the given group id from the database.
@@ -275,32 +277,32 @@ class DB:
         if self.check_if_group_exists(gid):
             gtitle = self.get_group_title(gid)
             self.__cursor.execute(''' SELECT * FROM logs WHERE gid = (%s) ORDER by mid ''', (gid,))
-            logging.debug("Printing all logs from group %s (%s)" % (gtitle, gid))
+            logger.debug("Printing all logs from group %s (%s)" % (gtitle, gid))
             for i in self.__cursor.fetchall():
-                logging.debug(i)
+                logger.debug(i)
         else:
-            logging.debug("No group exists with Group ID %s" % gid)
+            logger.debug("No group exists with Group ID %s" % gid)
 
     def list_db(self):
         """Prints all table names from the database.
         """
         self.__cursor.execute(''' SELECT name FROM sqlite_master WHERE type='table' ''')
-        logging.debug("Printing all databases")
+        logger.debug("Printing all databases")
         for i in self.__cursor.fetchall():
-            logging.debug(i)
+            logger.debug(i)
 
     def list_users(self):
         """Prints all users from the database.
         """
         self.__cursor.execute(''' SELECT * FROM people ORDER by uid ''')
-        logging.debug("Printing all users")
+        logger.debug("Printing all users")
         for i in self.__cursor.fetchall():
-            logging.debug(i)
+            logger.debug(i)
 
     def list_groups(self):
         """Prints all groups from the database.
         """
         self.__cursor.execute(''' SELECT * FROM groups ORDER by gid ''')
-        logging.debug("Printing all groups")
+        logger.debug("Printing all groups")
         for i in self.__cursor.fetchall():
-            logging.debug(i)
+            logger.debug(i)
