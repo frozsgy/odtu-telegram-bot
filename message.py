@@ -5,8 +5,7 @@ class TelegramMessage:
     attachment = ""
     content = ""
 
-    def __init__(self, body):
-        message = body['message']
+    def __init__(self, message):
         chat = message['chat']
         self.chat_id = chat['id']
         self.chat_type = chat['type']
