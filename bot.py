@@ -85,32 +85,40 @@ class Bot:
     def parse_message(self, body):
         """Generates a TelegramMessage object from the message.
         """
-        tm = TelegramMessage(body)
-        content = tm.content
-        responses = self.__r.respond(tm.text) if tm.has_text else []
-        log_text = tm.generate_log_text()
+        user_message = TelegramMessage(body.get('message'))
+        responses = self.__r.respond(user_message.text) if user_message.has_text else []
+        log_text = user_message.generate_log_text()
 
         logger.debug(log_text)
         if self.__logging is True:
-            self.__db.log(*tm.generate_log_tuple())
-            # TODO
-            # Log responses from the bot
+            self.__db.log(*user_message.generate_log_tuple())
 
-        self.respond_to_message(tm, responses)
+        sent_message = self.respond_to_message(user_message, responses)
+
+        if self.__logging is True:
+            for m in sent_message:
+                bot_response = TelegramMessage(m)
+                self.__db.log(*bot_response.generate_log_tuple())
 
     def respond_to_message(self, tm, responses):
         """Sends responses to the messages.
         """
+        sent_responses = []
         for m in responses:
             if m == ('service', 1):
                 if self.__db.check_service(tm.message_from_id, 1) is True:
                     self.__db.remove_service(tm.message_from_id, 1)
-                    self.send_message(tm.chat_id, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', tm.message_id)
+                    sent_responses.append(
+                        self.send_message(tm.chat_id, 'Yemekhane servisi aboneliğiniz sonlandırıldı.', tm.message_id)
+                    )
                 else:
                     self.__db.add_service(tm.message_from_id, 1)
-                    self.send_message(tm.chat_id, 'Yemekhane servisine abone oldunuz.', tm.message_id)
+                    sent_responses.append(
+                        self.send_message(tm.chat_id, 'Yemekhane servisine abone oldunuz.', tm.message_id)
+                    )
             else:
-                self.send_message(tm.chat_id, m, tm.message_id)
+                sent_responses.append(self.send_message(tm.chat_id, m, tm.message_id))
+        return sent_responses
 
     def parse_inline(self, body):
         """Parses inline messages for inline bot functions.
@@ -146,7 +154,7 @@ class Bot:
         chat_id -- The chat ID to send the message to
         message -- The message body
         reply   -- If a reply 1, otherwise by default 0
-        Returns boolean.
+        Returns result if successful, False otherwise.
         """
         url = self.__url + "/sendMessage"
         params = {
@@ -160,7 +168,7 @@ class Bot:
         page = r.content
         items = json.loads(page)
         if items['ok']:
-            return True
+            return items.get('result')
         else:
             return False
 
