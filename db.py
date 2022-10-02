@@ -21,7 +21,7 @@ class DB:
             database=os.environ['POSTGRES_DB'],
             user=os.environ['POSTGRES_USER'],
             password=os.environ['POSTGRES_PASSWORD'],
-            host="db",
+            host=os.environ['POSTGRES_HOST'],
             port="5432",
         )
         self.__cursor = self.__conn.cursor()
