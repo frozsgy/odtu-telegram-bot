@@ -19,6 +19,20 @@ services:
       - db_nw
     depends_on:
       - db
+  backup:
+    container_name: backup
+    image: prodrigestivill/postgres-backup-local
+    restart: always
+    volumes:
+      - ./backups:/backups
+    links:
+      - db:db
+    depends_on:
+      - db
+    env_file:
+      - env
+    networks:
+      - db_nw
 networks:
   db_nw:
     driver: bridge

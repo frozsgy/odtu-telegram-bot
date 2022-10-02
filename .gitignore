@@ -140,3 +140,6 @@ postgres-data/
 
 # pycharm files
 .idea/
+
+# db backups
+backups/**/*.sql.gz
